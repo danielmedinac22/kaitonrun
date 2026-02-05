@@ -38,6 +38,9 @@ export async function GET(req: Request) {
     .sort((a, b) => (a.date < b.date ? -1 : 1))
     .map((w) => {
       const planned = planForDate(parseISO(w.date));
+      const match = planned.type === "rest" ? w.type === "rest" : w.type === planned.type;
+      const changed = planned.type !== "rest" && w.type !== planned.type;
+
       return {
         date: w.date,
         actual_type: w.type,
@@ -48,6 +51,8 @@ export async function GET(req: Request) {
         planned_title: planned.title,
         planned_minutes: planned.targetMinutes ?? "",
         planned_rpe: planned.rpe ?? "",
+        match: match ? "yes" : "no",
+        changed: changed ? "yes" : "no",
       };
     });
 
@@ -65,6 +70,8 @@ export async function GET(req: Request) {
     planned_title: "",
     planned_minutes: "",
     planned_rpe: "",
+    match: "",
+    changed: "",
   });
 
   const csv = [headers.join(",")]

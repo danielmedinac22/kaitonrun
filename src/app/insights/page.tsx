@@ -59,6 +59,17 @@ export default async function InsightsPage() {
     return d >= start && d < end;
   });
 
+  const plannedByDate = new Map<string, ReturnType<typeof planForDate>>(
+    plannedDays.map((d) => [dateKey(d), planForDate(d)])
+  );
+
+  const changedCount = workoutsThisWeek.filter((w) => {
+    const planned = plannedByDate.get(w.date);
+    if (!planned) return false;
+    if (planned.type === "rest") return false;
+    return w.type !== planned.type;
+  }).length;
+
   const doneCount = workoutsThisWeek.filter((w) => w.type !== "rest").length;
   const doneMinutes = workoutsThisWeek.reduce((acc, w) => acc + (w.minutes ?? 0), 0);
 
@@ -146,6 +157,22 @@ export default async function InsightsPage() {
                 <div className="text-sm text-slate-500">días</div>
               </div>
             </div>
+
+            <div className="rounded-lg border border-slate-200 bg-white p-4 md:col-span-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-sm text-slate-700">
+                  <span className="text-xs font-semibold text-slate-500">Cambios vs plan:</span>{" "}
+                  <span className="font-semibold text-slate-900">{changedCount}</span>
+                  <span className="text-slate-500"> esta semana</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="planned">Planned</Badge>
+                  <Badge variant="done">Hecho</Badge>
+                  <Badge variant="pending">Pendiente</Badge>
+                  <Badge variant="default">Info</Badge>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -197,17 +224,29 @@ export default async function InsightsPage() {
           </div>
           <div className="grid gap-2 md:grid-cols-2">
             {plannedDays.map((d) => {
-              const p = planForDate(d);
+              const key = dateKey(d);
+              const p = plannedByDate.get(key)!;
+              const actual = workoutsThisWeek.find((w) => w.date === key);
+
+              const isChanged = !!actual && p.type !== "rest" && actual.type !== p.type;
+
               return (
-                <div key={dateKey(d)} className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2">
+                <div key={key} className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2">
                   <div>
                     <div className="text-xs font-semibold text-slate-500">{format(d, "EEE dd MMM")}</div>
                     <div className="text-sm font-medium text-slate-900">{p.type === "rest" ? "Descanso" : p.title}</div>
+                    {actual ? (
+                      <div className="mt-1 text-xs text-slate-500">
+                        Hecho: {typeLabel(actual.type)}{actual.minutes ? ` · ${actual.minutes}m` : ""}{actual.rpe ? ` · RPE ${actual.rpe}/10` : ""}
+                      </div>
+                    ) : null}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-end gap-2">
                     <Badge variant={p.type === "rest" ? "default" : "planned"}>{typeLabel(p.type)}</Badge>
                     {p.targetMinutes ? <Badge variant="default">{p.targetMinutes}m</Badge> : null}
                     {p.rpe ? <Badge variant="default">RPE {p.rpe}</Badge> : null}
+                    {actual ? <Badge variant="done">Hecho</Badge> : p.type !== "rest" ? <Badge variant="pending">Pendiente</Badge> : null}
+                    {isChanged ? <Badge variant="default">Cambiado</Badge> : null}
                   </div>
                 </div>
               );
