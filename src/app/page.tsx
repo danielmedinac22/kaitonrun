@@ -48,7 +48,7 @@ export default function WeekPage() {
   return (
     <main className="space-y-4">
       <Card className="border-indigo-100 bg-gradient-to-br from-white to-indigo-50/50">
-        <CardHeader className="flex-row items-start justify-between gap-4">
+        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="flex items-center gap-2">
               <CardTitle>Plan de hoy</CardTitle>
@@ -58,11 +58,11 @@ export default function WeekPage() {
               {format(today, "EEEE d MMM", { locale: undefined })} · {plannedLabel(todayLogged?.type ?? todayPlannedType)}
             </CardDescription>
           </div>
-          <div className="flex gap-2">
-            <Button asChild variant="secondary">
+          <div className="grid grid-cols-2 gap-2 md:flex md:justify-end">
+            <Button asChild variant="secondary" className="w-full">
               <Link href={`/log?date=${todayKey}`}>Registrar</Link>
             </Button>
-            <Button asChild>
+            <Button asChild className="w-full">
               <Link href={`/log?date=${todayKey}`}>{todayLogged ? "Editar" : "Marcar"}</Link>
             </Button>
           </div>
@@ -116,7 +116,7 @@ export default function WeekPage() {
           <CardDescription>Mar/Jue/Dom — objetivo media maratón.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
             {days.map((d) => {
               const key = dateKey(d);
               const w = byDate.get(key);
