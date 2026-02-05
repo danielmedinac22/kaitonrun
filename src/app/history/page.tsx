@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { readWorkouts } from "@/lib/workouts";
 import HistoryClient from "./ui/HistoryClient";
 
@@ -10,10 +10,13 @@ export default function HistoryPage() {
   return (
     <main className="space-y-4">
       <Card>
-        <CardHeader title="Historial" subtitle="Filtra por tipo, duración y RPE." />
-        <CardBody>
+        <CardHeader>
+          <CardTitle>Historial</CardTitle>
+          <CardDescription>Filtra por tipo, duración y RPE.</CardDescription>
+        </CardHeader>
+        <CardContent>
           <HistoryClient workouts={workouts} />
-        </CardBody>
+        </CardContent>
       </Card>
     </main>
   );

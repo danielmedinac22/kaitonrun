@@ -1,38 +1,52 @@
-import Link from "next/link";
-import { ComponentProps } from "react";
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
 
-type Variant = "primary" | "secondary" | "ghost";
+import { cn } from "@/lib/utils";
 
-type Props = ComponentProps<"button"> & {
-  variant?: Variant;
-  asLinkHref?: string;
-};
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-indigo-600 text-white hover:bg-indigo-700",
+        secondary: "bg-white text-slate-900 border border-slate-200 hover:bg-slate-50",
+        outline: "border border-slate-200 bg-transparent hover:bg-slate-50",
+        ghost: "hover:bg-slate-100",
+        destructive: "bg-red-600 text-white hover:bg-red-700",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+);
 
-const styles: Record<Variant, string> = {
-  primary:
-    "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm shadow-indigo-600/10",
-  secondary:
-    "bg-white text-slate-900 hover:bg-slate-50 border border-slate-200 shadow-sm",
-  ghost: "bg-transparent text-slate-700 hover:bg-slate-100",
-};
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+}
 
-export function Button({ variant = "primary", asLinkHref, className = "", ...props }: Props) {
-  const base =
-    "inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white";
-
-  if (asLinkHref) {
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
     return (
-      <Link
-        href={asLinkHref}
-        className={`${base} ${styles[variant]} ${className}`}
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
       />
     );
   }
+);
+Button.displayName = "Button";
 
-  return (
-    <button
-      {...props}
-      className={`${base} ${styles[variant]} disabled:opacity-50 disabled:pointer-events-none ${className}`}
-    />
-  );
-}
+export { Button, buttonVariants };

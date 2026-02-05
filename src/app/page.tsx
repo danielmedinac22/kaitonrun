@@ -1,18 +1,30 @@
 import { addDays, format, startOfWeek } from "date-fns";
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import Link from "next/link";
+import { readWorkouts, workoutByDate, type WorkoutType } from "@/lib/workouts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { readWorkouts, workoutByDate } from "@/lib/workouts";
 
-function dowShort(d: Date) {
-  return format(d, "EEE");
-}
+const plannedDow = new Set([2, 4, 0]); // Tue Thu Sun
 
 function dateKey(d: Date) {
   return format(d, "yyyy-MM-dd");
 }
 
-const plannedDow = new Set([2, 4, 0]); // Tue Thu Sun
+function dowShort(d: Date) {
+  return format(d, "EEE").toUpperCase();
+}
+
+function plannedTypeForDow(dow: number): WorkoutType {
+  if (dow === 0 || dow === 2 || dow === 4) return "run";
+  return "rest";
+}
+
+function plannedLabel(type: WorkoutType) {
+  if (type === "run") return "Correr";
+  if (type === "gym") return "Fortalecimiento";
+  return "Descanso";
+}
 
 export default function WeekPage() {
   const base = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -21,15 +33,89 @@ export default function WeekPage() {
   const workouts = readWorkouts();
   const byDate = workoutByDate(workouts);
 
+  const today = new Date();
+  const todayKey = dateKey(today);
+  const todayLogged = byDate.get(todayKey);
+  const todayDow = today.getDay();
+  const todayPlannedType = plannedTypeForDow(todayDow);
+
+  const todayBadge = todayLogged
+    ? { v: "done" as const, t: "Hecho" }
+    : plannedDow.has(todayDow)
+      ? { v: "pending" as const, t: "Pendiente" }
+      : { v: "default" as const, t: "Libre" };
+
   return (
     <main className="space-y-4">
+      <Card className="border-indigo-100 bg-gradient-to-br from-white to-indigo-50/50">
+        <CardHeader className="flex-row items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <CardTitle>Plan de hoy</CardTitle>
+              <Badge variant={todayBadge.v as any}>{todayBadge.t}</Badge>
+            </div>
+            <CardDescription className="mt-1">
+              {format(today, "EEEE d MMM", { locale: undefined })} · {plannedLabel(todayLogged?.type ?? todayPlannedType)}
+            </CardDescription>
+          </div>
+          <div className="flex gap-2">
+            <Button asChild variant="secondary">
+              <Link href={`/log?date=${todayKey}`}>Registrar</Link>
+            </Button>
+            <Button asChild>
+              <Link href={`/log?date=${todayKey}`}>{todayLogged ? "Editar" : "Marcar"}</Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <div className="text-xs font-semibold text-slate-500">Qué hacer</div>
+              <div className="mt-1 text-sm text-slate-700">
+                {todayLogged ? (
+                  <span>
+                    Registrado: <span className="font-semibold capitalize">{todayLogged.type}</span>
+                    {todayLogged.minutes ? ` · ${todayLogged.minutes} min` : ""}
+                    {todayLogged.rpe ? ` · RPE ${todayLogged.rpe}/10` : ""}
+                  </span>
+                ) : todayPlannedType === "run" ? (
+                  <ul className="list-disc pl-5">
+                    <li>35–50 min</li>
+                    <li>RPE 3–7 según sesión</li>
+                    <li>Al final: minutos + RPE + notas</li>
+                  </ul>
+                ) : (
+                  <ul className="list-disc pl-5">
+                    <li>Movilidad 10–15 min</li>
+                    <li>O fuerza (20–30 min) si te sientes bien</li>
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <div className="text-xs font-semibold text-slate-500">Regla</div>
+              <div className="mt-1 text-sm text-slate-700">
+                Si aparece dolor que cambia tu zancada: paramos y ajustamos.
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <div className="text-xs font-semibold text-slate-500">Siguiente</div>
+              <div className="mt-1 text-sm text-slate-700">
+                Mar/Jue/Dom · 2 sesiones cortas + 1 largo.
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
-        <CardHeader
-          title="Semana actual"
-          subtitle="Plan simple: 2 sesiones cortas (semana) + 1 largo (domingo)."
-          right={<Button asLinkHref="/log" variant="primary">Registrar</Button>}
-        />
-        <CardBody>
+        <CardHeader>
+          <CardTitle>Semana actual</CardTitle>
+          <CardDescription>Mar/Jue/Dom — objetivo media maratón.</CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {days.map((d) => {
               const key = dateKey(d);
@@ -37,22 +123,20 @@ export default function WeekPage() {
               const dow = d.getDay();
               const isPlanned = plannedDow.has(dow);
 
-              const status = w ? "done" : isPlanned ? "pending" : "moved";
-              const badge =
-                status === "done"
-                  ? { v: "done" as const, t: "Hecho" }
-                  : status === "pending"
-                    ? { v: "pending" as const, t: "Pendiente" }
-                    : { v: "moved" as const, t: "Libre" };
+              const badge = w
+                ? { v: "done" as const, t: "Hecho" }
+                : isPlanned
+                  ? { v: "pending" as const, t: "Pendiente" }
+                  : { v: "default" as const, t: "Libre" };
 
               return (
-                <div key={key} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div key={key} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="text-xs font-semibold text-slate-500">{dowShort(d).toUpperCase()}</div>
+                      <div className="text-xs font-semibold text-slate-500">{dowShort(d)}</div>
                       <div className="mt-1 text-sm font-semibold text-slate-900">{format(d, "d MMM")}</div>
                     </div>
-                    <Badge variant={badge.v}>{badge.t}</Badge>
+                    <Badge variant={badge.v as any}>{badge.t}</Badge>
                   </div>
 
                   <div className="mt-3 text-sm text-slate-700">
@@ -74,38 +158,16 @@ export default function WeekPage() {
                   </div>
 
                   <div className="mt-4">
-                    <Button asLinkHref={`/log?date=${key}`} variant={w ? "secondary" : "primary"}>
-                      {w ? "Editar" : "Registrar"}
+                    <Button asChild variant={w ? "secondary" : "default"}>
+                      <Link href={`/log?date=${key}`}>{w ? "Editar" : "Registrar"}</Link>
                     </Button>
                   </div>
                 </div>
               );
             })}
           </div>
-        </CardBody>
+        </CardContent>
       </Card>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader title="Hoy" subtitle="Check rápido" />
-          <CardBody>
-            <div className="text-sm text-slate-700">
-              Después de entrenar: envíame por Telegram <span className="font-semibold">minutos + RPE + notas</span>.
-              (Luego lo automatizamos con Strava.)
-            </div>
-          </CardBody>
-        </Card>
-        <Card>
-          <CardHeader title="Reglas" subtitle="Para progresar sin lesionarnos" />
-          <CardBody>
-            <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
-              <li>Semana 1–4: prioridad consistencia (no velocidad).</li>
-              <li>Si aparece dolor que cambia tu zancada: paramos y ajustamos.</li>
-              <li>Subida de carga: máx +10–15% semanal.</li>
-            </ul>
-          </CardBody>
-        </Card>
-      </div>
     </main>
   );
 }

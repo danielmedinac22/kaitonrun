@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import LogForm from "./ui/LogForm";
 
 export const dynamic = "force-dynamic";
@@ -9,13 +9,13 @@ export default function LogPage({ searchParams }: { searchParams?: Record<string
   return (
     <main className="space-y-4">
       <Card>
-        <CardHeader
-          title="Registrar entrenamiento"
-          subtitle="Duración + RPE + notas. Próximo paso: guardar como commit en GitHub."
-        />
-        <CardBody>
+        <CardHeader>
+          <CardTitle>Registrar entrenamiento</CardTitle>
+          <CardDescription>Duración + RPE + notas. (Luego lo hacemos persistente en GitHub.)</CardDescription>
+        </CardHeader>
+        <CardContent>
           <LogForm defaultDate={date} />
-        </CardBody>
+        </CardContent>
       </Card>
     </main>
   );

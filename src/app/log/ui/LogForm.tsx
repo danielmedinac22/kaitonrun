@@ -83,7 +83,7 @@ export default function LogForm({ defaultDate }: { defaultDate?: string }) {
       </label>
 
       <div className="flex items-center justify-between">
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="default">
           Guardar
         </Button>
         <div className="text-sm text-slate-500">{status}</div>
