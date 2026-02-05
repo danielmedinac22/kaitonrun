@@ -5,6 +5,7 @@ import QuickMarkDialog from "@/app/ui/QuickMarkDialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { planForDate, programMeta } from "@/lib/plan";
 import { readWorkouts, workoutByDate } from "@/lib/workouts";
 
@@ -156,14 +157,29 @@ export default async function WeekPage() {
                           {w.minutes ? `${w.minutes} min` : ""} {w.rpe ? `· RPE ${w.rpe}/10` : ""}
                         </div>
                       </div>
-                    ) : isPlanned ? (
-                      <ul className="list-disc space-y-1 pl-5 text-slate-600">
-                        <li>{plan.title}</li>
-                        <li>{plan.targetMinutes ? `${plan.targetMinutes} min` : "30–60 min"}</li>
-                        <li>{plan.rpe ? `RPE ${plan.rpe}` : "RPE 3–7"}</li>
-                      </ul>
                     ) : (
-                      <div className="text-slate-500">{plan.type === "gym" ? "Fortalecimiento" : "Descanso"}</div>
+                      <Accordion type="single" collapsible className="-mx-1">
+                        <AccordionItem value="plan" className="border-none">
+                          <AccordionTrigger className="rounded-md px-1 hover:bg-slate-50">
+                            <span className="text-left">
+                              <span className="font-medium text-slate-800">
+                                {plan.type === "run" ? plan.title : plan.type === "gym" ? "Fortalecimiento" : "Descanso"}
+                              </span>
+                              <span className="ml-2 text-slate-500">
+                                {plan.targetMinutes ? `${plan.targetMinutes} min` : ""}
+                                {plan.rpe ? ` · RPE ${plan.rpe}` : ""}
+                              </span>
+                            </span>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <ul className="list-disc space-y-1 pl-5 text-slate-600">
+                              {plan.details.map((line) => (
+                                <li key={line}>{line}</li>
+                              ))}
+                            </ul>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
                     )}
                   </div>
 
