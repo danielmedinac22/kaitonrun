@@ -5,7 +5,7 @@ import QuickMarkDialog from "@/app/ui/QuickMarkDialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { planForDate, programWeekIndex } from "@/lib/plan";
+import { planForDate, programMeta } from "@/lib/plan";
 import { readWorkouts, workoutByDate } from "@/lib/workouts";
 
 const plannedDow = new Set([2, 4, 0]); // Tue Thu Sun
@@ -36,7 +36,7 @@ export default async function WeekPage() {
   const todayLogged = byDate.get(todayKey);
   const todayDow = today.getDay();
   const todayPlan = planForDate(today);
-  const weekIndex = programWeekIndex(today);
+  const { weekIndex, phase, weeksToRace } = programMeta(today);
 
   const todayBadge = todayLogged
     ? { v: "done" as const, t: "Hecho" }
@@ -55,7 +55,7 @@ export default async function WeekPage() {
               <Badge variant={todayBadge.v as any}>{todayBadge.t}</Badge>
             </div>
             <CardDescription className="mt-1">
-              {format(today, "EEEE d MMM")} · {todayLogged ? typeLabel(todayLogged.type) : todayPlan.title} · Semana {weekIndex}
+              {format(today, "EEEE d MMM")} · {todayLogged ? typeLabel(todayLogged.type) : todayPlan.title} · Semana {weekIndex} · {phase} · {weeksToRace} sem a carrera
             </CardDescription>
           </div>
 
