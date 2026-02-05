@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, ClipboardList, PlusCircle } from "lucide-react";
+import { BarChart3, CalendarDays, ClipboardList, PlusCircle } from "lucide-react";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -35,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <nav className="hidden flex-wrap items-center gap-2 md:flex">
                 <NavLink href="/" label="Semana" />
                 <NavLink href="/history" label="Historial" />
+                <NavLink href="/insights" label="Insights" />
                 <Link
                   href="/log"
                   className="ml-1 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
@@ -53,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           {/* Mobile bottom nav */}
           <nav className="fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white/90 backdrop-blur md:hidden">
-            <div className="mx-auto grid max-w-5xl grid-cols-3 px-4 py-2">
+            <div className="mx-auto grid max-w-5xl grid-cols-4 px-4 py-2">
               <Link href="/" className="flex flex-col items-center justify-center gap-1 rounded-lg py-2 text-xs font-medium text-slate-700">
                 <CalendarDays className="h-5 w-5" />
                 Semana
@@ -61,6 +62,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/history" className="flex flex-col items-center justify-center gap-1 rounded-lg py-2 text-xs font-medium text-slate-700">
                 <ClipboardList className="h-5 w-5" />
                 Historial
+              </Link>
+              <Link href="/insights" className="flex flex-col items-center justify-center gap-1 rounded-lg py-2 text-xs font-medium text-slate-700">
+                <BarChart3 className="h-5 w-5" />
+                Insights
               </Link>
               <Link href="/log" className="flex flex-col items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold text-indigo-700">
                 <PlusCircle className="h-5 w-5" />
