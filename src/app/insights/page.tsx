@@ -27,15 +27,27 @@ function typeLabel(type: string) {
   return "Descanso";
 }
 
-export default async function InsightsPage() {
+export default async function InsightsPage({
+  searchParams,
+}: {
+  searchParams?: { from?: string; to?: string };
+}) {
   const workouts = await readWorkouts();
 
   const today = new Date();
-  const start = startOfWeek(today, { weekStartsOn: 1 });
-  const end = new Date(start);
-  end.setDate(end.getDate() + 7);
 
-  const plannedDays = Array.from({ length: 7 }).map((_, i) => {
+  const fromParam = searchParams?.from ? parseISO(searchParams.from) : null;
+  const toParam = searchParams?.to ? parseISO(searchParams.to) : null;
+
+  const start = fromParam && !Number.isNaN(fromParam.getTime()) ? fromParam : startOfWeek(today, { weekStartsOn: 1 });
+  const end = toParam && !Number.isNaN(toParam.getTime()) ? toParam : (() => {
+    const d = new Date(start);
+    d.setDate(d.getDate() + 7);
+    return d;
+  })();
+
+  const daysInRange = Math.max(1, Math.min(31, Math.ceil((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000))));
+  const plannedDays = Array.from({ length: daysInRange }).map((_, i) => {
     const d = new Date(start);
     d.setDate(d.getDate() + i);
     return d;
@@ -121,7 +133,15 @@ export default async function InsightsPage() {
               <CardDescription>Resumen semanal y tendencia.</CardDescription>
             </div>
             <Button asChild variant="secondary">
-              <Link href="/api/export?format=csv">Descargar CSV</Link>
+              <Link
+                href={
+                  `/api/export?format=csv` +
+                  (searchParams?.from ? `&from=${encodeURIComponent(searchParams.from)}` : "") +
+                  (searchParams?.to ? `&to=${encodeURIComponent(searchParams.to)}` : "")
+                }
+              >
+                Descargar CSV
+              </Link>
             </Button>
           </div>
         </CardHeader>
@@ -204,7 +224,7 @@ export default async function InsightsPage() {
         <CardHeader>
           <CardTitle>Esta semana (plan)</CardTitle>
           <CardDescription>
-            Lo planeado según el programa. Runs: {doneRuns.length}/{plannedRuns.length} ({pct(doneRuns.length, plannedRuns.length)}%) · Gym: {doneGym.length}/{plannedGym.length} ({pct(doneGym.length, plannedGym.length)}%)
+            {format(start, "dd MMM")} → {format(end, "dd MMM")} · Runs: {doneRuns.length}/{plannedRuns.length} ({pct(doneRuns.length, plannedRuns.length)}%) · Gym: {doneGym.length}/{plannedGym.length} ({pct(doneGym.length, plannedGym.length)}%)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -246,7 +266,7 @@ export default async function InsightsPage() {
                     {p.targetMinutes ? <Badge variant="default">{p.targetMinutes}m</Badge> : null}
                     {p.rpe ? <Badge variant="default">RPE {p.rpe}</Badge> : null}
                     {actual ? <Badge variant="done">Hecho</Badge> : p.type !== "rest" ? <Badge variant="pending">Pendiente</Badge> : null}
-                    {isChanged ? <Badge variant="default">Cambiado</Badge> : null}
+                    {isChanged ? <Badge variant="changed">Cambiado</Badge> : null}
                   </div>
                 </div>
               );
