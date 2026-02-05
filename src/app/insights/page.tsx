@@ -134,6 +134,41 @@ export default async function InsightsPage({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="text-xs font-semibold text-slate-600">Rango rápido</div>
+                <Button asChild size="sm" variant="secondary">
+                  <Link href="/insights">Semana</Link>
+                </Button>
+                <Button asChild size="sm" variant="secondary">
+                  <Link
+                    href={(() => {
+                      const d = new Date();
+                      const from = new Date(d);
+                      from.setDate(d.getDate() - 30);
+                      const f = format(from, "yyyy-MM-dd");
+                      const t = format(d, "yyyy-MM-dd");
+                      return `/insights?from=${encodeURIComponent(f)}&to=${encodeURIComponent(t)}`;
+                    })()}
+                  >
+                    30d
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="secondary">
+                  <Link
+                    href={(() => {
+                      const d = new Date();
+                      const from = new Date(d);
+                      from.setDate(d.getDate() - 90);
+                      const f = format(from, "yyyy-MM-dd");
+                      const t = format(d, "yyyy-MM-dd");
+                      return `/insights?from=${encodeURIComponent(f)}&to=${encodeURIComponent(t)}`;
+                    })()}
+                  >
+                    90d
+                  </Link>
+                </Button>
+              </div>
+
               <form action="/insights" className="flex flex-wrap items-center gap-2">
                 <label className="flex items-center gap-2 text-xs font-semibold text-slate-600">
                   Desde
