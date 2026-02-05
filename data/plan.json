@@ -1,0 +1,9 @@
+{
+  "plan": {
+    "days": [
+      {"dow": 2, "type": "run", "title": "Sesión semana (calidad suave)", "target_minutes": 45},
+      {"dow": 4, "type": "run", "title": "Sesión semana (fácil + técnica)", "target_minutes": 40},
+      {"dow": 0, "type": "run", "title": "Largo (fácil)", "target_minutes": 70}
+    ]
+  }
+}
