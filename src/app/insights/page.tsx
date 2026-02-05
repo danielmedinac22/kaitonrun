@@ -132,17 +132,44 @@ export default async function InsightsPage({
               <CardTitle>Insights</CardTitle>
               <CardDescription>Resumen semanal y tendencia.</CardDescription>
             </div>
-            <Button asChild variant="secondary">
-              <Link
-                href={
-                  `/api/export?format=csv` +
-                  (searchParams?.from ? `&from=${encodeURIComponent(searchParams.from)}` : "") +
-                  (searchParams?.to ? `&to=${encodeURIComponent(searchParams.to)}` : "")
-                }
-              >
-                Descargar CSV
-              </Link>
-            </Button>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <form action="/insights" className="flex flex-wrap items-center gap-2">
+                <label className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                  Desde
+                  <input
+                    name="from"
+                    defaultValue={searchParams?.from || ""}
+                    type="date"
+                    className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700"
+                  />
+                </label>
+                <label className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                  Hasta
+                  <input
+                    name="to"
+                    defaultValue={searchParams?.to || ""}
+                    type="date"
+                    className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700"
+                  />
+                </label>
+                <Button type="submit" variant="secondary">
+                  Ver
+                </Button>
+              </form>
+
+              <Button asChild variant="secondary">
+                <Link
+                  href={
+                    `/api/export?format=csv` +
+                    (searchParams?.from ? `&from=${encodeURIComponent(searchParams.from)}` : "") +
+                    (searchParams?.to ? `&to=${encodeURIComponent(searchParams.to)}` : "")
+                  }
+                >
+                  Descargar CSV
+                </Link>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
