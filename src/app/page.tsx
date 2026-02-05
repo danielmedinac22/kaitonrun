@@ -1,5 +1,6 @@
 import { addDays, format, startOfWeek } from "date-fns";
 import Link from "next/link";
+import QuickMarkDialog from "@/app/ui/QuickMarkDialog";
 import { readWorkouts, workoutByDate, type WorkoutType } from "@/lib/workouts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -62,9 +63,7 @@ export default async function WeekPage() {
             <Button asChild variant="secondary" className="w-full">
               <Link href={`/log?date=${todayKey}`}>Registrar</Link>
             </Button>
-            <Button asChild className="w-full">
-              <Link href={`/log?date=${todayKey}`}>{todayLogged ? "Editar" : "Marcar"}</Link>
-            </Button>
+            <QuickMarkDialog date={todayKey} defaultType={todayLogged?.type ?? todayPlannedType} triggerText={todayLogged ? "Editar rápido" : "Marcar como hecho"} />
           </div>
         </CardHeader>
         <CardContent>
