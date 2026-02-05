@@ -1,10 +1,12 @@
 import { addDays, format, startOfWeek } from "date-fns";
 import Link from "next/link";
+
 import QuickMarkDialog from "@/app/ui/QuickMarkDialog";
-import { readWorkouts, workoutByDate, type WorkoutType } from "@/lib/workouts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { planForDate, programWeekIndex } from "@/lib/plan";
+import { readWorkouts, workoutByDate } from "@/lib/workouts";
 
 const plannedDow = new Set([2, 4, 0]); // Tue Thu Sun
 
@@ -16,12 +18,7 @@ function dowShort(d: Date) {
   return format(d, "EEE").toUpperCase();
 }
 
-function plannedTypeForDow(dow: number): WorkoutType {
-  if (dow === 0 || dow === 2 || dow === 4) return "run";
-  return "rest";
-}
-
-function plannedLabel(type: WorkoutType) {
+function typeLabel(type: string) {
   if (type === "run") return "Correr";
   if (type === "gym") return "Fortalecimiento";
   return "Descanso";
@@ -38,7 +35,8 @@ export default async function WeekPage() {
   const todayKey = dateKey(today);
   const todayLogged = byDate.get(todayKey);
   const todayDow = today.getDay();
-  const todayPlannedType = plannedTypeForDow(todayDow);
+  const todayPlan = planForDate(today);
+  const weekIndex = programWeekIndex(today);
 
   const todayBadge = todayLogged
     ? { v: "done" as const, t: "Hecho" }
@@ -48,6 +46,7 @@ export default async function WeekPage() {
 
   return (
     <main className="space-y-4">
+      {/* TODAY */}
       <Card className="border-indigo-100 bg-gradient-to-br from-white to-indigo-50/50">
         <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
@@ -56,57 +55,69 @@ export default async function WeekPage() {
               <Badge variant={todayBadge.v as any}>{todayBadge.t}</Badge>
             </div>
             <CardDescription className="mt-1">
-              {format(today, "EEEE d MMM")} · {plannedLabel(todayLogged?.type ?? todayPlannedType)}
+              {format(today, "EEEE d MMM")} · {todayLogged ? typeLabel(todayLogged.type) : todayPlan.title} · Semana {weekIndex}
             </CardDescription>
           </div>
+
           <div className="grid grid-cols-2 gap-2 md:flex md:justify-end">
             <Button asChild variant="secondary" className="w-full">
               <Link href={`/log?date=${todayKey}`}>Registrar</Link>
             </Button>
-            <QuickMarkDialog date={todayKey} defaultType={todayLogged?.type ?? todayPlannedType} triggerText={todayLogged ? "Editar rápido" : "Marcar como hecho"} />
+            <QuickMarkDialog
+              date={todayKey}
+              defaultType={(todayLogged?.type as any) ?? todayPlan.type}
+              triggerText={todayLogged ? "Editar rápido" : "Marcar como hecho"}
+            />
           </div>
         </CardHeader>
+
         <CardContent>
           <div className="grid gap-3 md:grid-cols-3">
             <div className="rounded-lg border border-slate-200 bg-white p-4">
               <div className="text-xs font-semibold text-slate-500">Qué hacer</div>
-              <div className="mt-1 text-sm text-slate-700">
+              <div className="mt-2 text-sm text-slate-700">
                 {todayLogged ? (
-                  <span>
-                    Registrado: <span className="font-semibold capitalize">{todayLogged.type}</span>
-                    {todayLogged.minutes ? ` · ${todayLogged.minutes} min` : ""}
-                    {todayLogged.rpe ? ` · RPE ${todayLogged.rpe}/10` : ""}
-                  </span>
-                ) : todayPlannedType === "run" ? (
-                  <ul className="list-disc pl-5">
-                    <li>35–50 min</li>
-                    <li>RPE 3–7 según sesión</li>
-                    <li>Al final: minutos + RPE + notas</li>
-                  </ul>
+                  <div>
+                    <div className="font-medium">Registrado</div>
+                    <div className="mt-1 text-slate-500">
+                      {typeLabel(todayLogged.type)}
+                      {todayLogged.minutes ? ` · ${todayLogged.minutes} min` : ""}
+                      {todayLogged.rpe ? ` · RPE ${todayLogged.rpe}/10` : ""}
+                    </div>
+                  </div>
                 ) : (
-                  <ul className="list-disc pl-5">
-                    <li>Movilidad 10–15 min</li>
-                    <li>O fuerza (20–30 min) si te sientes bien</li>
-                  </ul>
+                  <div>
+                    <div className="font-medium text-slate-800">{todayPlan.title}</div>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-slate-600">
+                      {todayPlan.details.map((d) => (
+                        <li key={d}>{d}</li>
+                      ))}
+                    </ul>
+                    <div className="mt-2 text-xs text-slate-500">
+                      {todayPlan.targetMinutes ? `${todayPlan.targetMinutes} min` : ""}
+                      {todayPlan.rpe ? ` · RPE ${todayPlan.rpe}` : ""}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
 
             <div className="rounded-lg border border-slate-200 bg-white p-4">
               <div className="text-xs font-semibold text-slate-500">Regla</div>
-              <div className="mt-1 text-sm text-slate-700">
+              <div className="mt-2 text-sm text-slate-700">
                 Si aparece dolor que cambia tu zancada: paramos y ajustamos.
               </div>
             </div>
 
             <div className="rounded-lg border border-slate-200 bg-white p-4">
               <div className="text-xs font-semibold text-slate-500">Siguiente</div>
-              <div className="mt-1 text-sm text-slate-700">Mar/Jue/Dom · 2 sesiones cortas + 1 largo.</div>
+              <div className="mt-2 text-sm text-slate-700">Mar/Jue/Dom · 2 sesiones cortas + 1 largo.</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* WEEK */}
       <Card>
         <CardHeader>
           <CardTitle>Semana actual</CardTitle>
@@ -119,6 +130,7 @@ export default async function WeekPage() {
               const w = byDate.get(key);
               const dow = d.getDay();
               const isPlanned = plannedDow.has(dow);
+              const plan = planForDate(d);
 
               const badge = w
                 ? { v: "done" as const, t: "Hecho" }
@@ -146,11 +158,12 @@ export default async function WeekPage() {
                       </div>
                     ) : isPlanned ? (
                       <ul className="list-disc space-y-1 pl-5 text-slate-600">
-                        <li>30–60 min</li>
-                        <li>RPE 3–7 según sesión</li>
+                        <li>{plan.title}</li>
+                        <li>{plan.targetMinutes ? `${plan.targetMinutes} min` : "30–60 min"}</li>
+                        <li>{plan.rpe ? `RPE ${plan.rpe}` : "RPE 3–7"}</li>
                       </ul>
                     ) : (
-                      <div className="text-slate-500">Descanso o fuerza.</div>
+                      <div className="text-slate-500">{plan.type === "gym" ? "Fortalecimiento" : "Descanso"}</div>
                     )}
                   </div>
 
