@@ -3,21 +3,26 @@ import fs from "fs";
 import path from "path";
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const date = String(body.date || "").slice(0, 10);
-  const type = String(body.type || "run");
-  const minutes = body.minutes ? Number(body.minutes) : undefined;
-  const rpe = body.rpe ? Number(body.rpe) : undefined;
-  const notes = body.notes ? String(body.notes) : undefined;
+  try {
+    const body = await req.json();
+    const date = String(body.date || "").slice(0, 10);
+    const type = String(body.type || "run");
+    const minutes = body.minutes ? Number(body.minutes) : undefined;
+    const rpe = body.rpe ? Number(body.rpe) : undefined;
+    const notes = body.notes ? String(body.notes) : undefined;
 
-  if (!date) return new NextResponse("Missing date", { status: 400 });
+    if (!date) return NextResponse.json({ error: "Missing date" }, { status: 400 });
 
-  const workout = { date, type, minutes, rpe, notes };
+    const workout = { date, type, minutes, rpe, notes };
 
-  const dir = path.join(process.cwd(), "data", "workouts");
-  fs.mkdirSync(dir, { recursive: true });
-  const outPath = path.join(dir, `${date}.json`);
-  fs.writeFileSync(outPath, JSON.stringify(workout, null, 2));
+    const dir = path.join(process.cwd(), "data", "workouts");
+    fs.mkdirSync(dir, { recursive: true });
+    const outPath = path.join(dir, `${date}.json`);
+    fs.writeFileSync(outPath, JSON.stringify(workout, null, 2));
 
-  return NextResponse.json({ ok: true, path: `data/workouts/${date}.json` });
+    return NextResponse.json({ ok: true, path: `data/workouts/${date}.json` });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "unknown";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }

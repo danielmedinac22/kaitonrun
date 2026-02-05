@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
-export default function LogForm() {
+export default function LogForm({ defaultDate }: { defaultDate?: string }) {
   const [status, setStatus] = useState<string>("");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -15,32 +16,32 @@ export default function LogForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    const j = await res.json().catch(() => null);
     if (res.ok) {
-      setStatus("Listo. Quedó guardado.");
+      setStatus("Listo. Guardado.");
       e.currentTarget.reset();
     } else {
-      const t = await res.text();
-      setStatus("Error: " + t);
+      setStatus("Error: " + (j?.error || "no se pudo guardar"));
     }
   }
 
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <form onSubmit={onSubmit} className="rounded-xl border border-zinc-800 bg-zinc-900/20 p-4">
+    <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <label className="grid gap-1 text-sm">
-          <span className="text-zinc-300">Fecha</span>
+          <span className="text-slate-600">Fecha</span>
           <input
             name="date"
-            defaultValue={today}
-            className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-zinc-100"
+            defaultValue={defaultDate || today}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2"
           />
         </label>
 
         <label className="grid gap-1 text-sm">
-          <span className="text-zinc-300">Tipo</span>
-          <select name="type" className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-zinc-100">
+          <span className="text-slate-600">Tipo</span>
+          <select name="type" className="rounded-lg border border-slate-200 bg-white px-3 py-2">
             <option value="run">Run</option>
             <option value="gym">Gym</option>
             <option value="rest">Rest</option>
@@ -48,52 +49,45 @@ export default function LogForm() {
         </label>
 
         <label className="grid gap-1 text-sm">
-          <span className="text-zinc-300">Duración (min)</span>
+          <span className="text-slate-600">Duración (min)</span>
           <input
             name="minutes"
             type="number"
             min={0}
             placeholder="45"
-            className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-zinc-100"
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2"
           />
         </label>
 
         <label className="grid gap-1 text-sm">
-          <span className="text-zinc-300">RPE (1–10)</span>
+          <span className="text-slate-600">RPE (1–10)</span>
           <input
             name="rpe"
             type="number"
             min={1}
             max={10}
             placeholder="6"
-            className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-zinc-100"
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2"
           />
         </label>
       </div>
 
-      <label className="mt-4 grid gap-1 text-sm">
-        <span className="text-zinc-300">Notas</span>
+      <label className="grid gap-1 text-sm">
+        <span className="text-slate-600">Notas</span>
         <textarea
           name="notes"
-          rows={4}
-          placeholder="Cómo te sentiste, molestias, energía, etc."
-          className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-zinc-100"
+          rows={5}
+          placeholder="Sensaciones, molestias, energía, clima, etc."
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2"
         />
       </label>
 
-      <div className="mt-4 flex items-center justify-between">
-        <button
-          type="submit"
-          className="rounded-md bg-white px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-200"
-        >
+      <div className="flex items-center justify-between">
+        <Button type="submit" variant="primary">
           Guardar
-        </button>
-        <div className="text-sm text-zinc-400">{status}</div>
+        </Button>
+        <div className="text-sm text-slate-500">{status}</div>
       </div>
-
-      <p className="mt-4 text-xs text-zinc-500">
-        Nota: este MVP guarda en el servidor (Vercel) cuando esté desplegado. En la próxima iteración lo hacemos persistente en GitHub (commits) para que quede sincronizado.
-      </p>
     </form>
   );
 }
