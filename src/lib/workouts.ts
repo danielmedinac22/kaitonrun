@@ -1,6 +1,3 @@
-import fs from "fs";
-import path from "path";
-
 export type WorkoutType = "run" | "gym" | "rest";
 export type Workout = {
   date: string; // YYYY-MM-DD
@@ -10,19 +7,20 @@ export type Workout = {
   notes?: string;
 };
 
-export function workoutsDir() {
-  return path.join(process.cwd(), "data", "workouts");
-}
+import { getFileContent, listRepoDir } from "@/lib/github";
 
-export function readWorkouts(): Workout[] {
-  const dir = workoutsDir();
-  if (!fs.existsSync(dir)) return [];
-  const files = fs.readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
+export async function readWorkouts(): Promise<Workout[]> {
+  const files = await listRepoDir("data/workouts");
+  const jsonFiles = files
+    .filter((f) => f.name.endsWith(".json"))
+    .sort((a, b) => (a.name < b.name ? 1 : -1));
+
   const out: Workout[] = [];
-  for (const f of files) {
+  for (const f of jsonFiles.slice(0, 200)) {
+    const txt = await getFileContent(f.path);
+    if (!txt) continue;
     try {
-      const j = JSON.parse(fs.readFileSync(path.join(dir, f), "utf-8"));
-      out.push(j);
+      out.push(JSON.parse(txt));
     } catch {}
   }
   return out;

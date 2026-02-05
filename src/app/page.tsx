@@ -26,11 +26,11 @@ function plannedLabel(type: WorkoutType) {
   return "Descanso";
 }
 
-export default function WeekPage() {
+export default async function WeekPage() {
   const base = startOfWeek(new Date(), { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }).map((_, i) => addDays(base, i));
 
-  const workouts = readWorkouts();
+  const workouts = await readWorkouts();
   const byDate = workoutByDate(workouts);
 
   const today = new Date();
@@ -55,7 +55,7 @@ export default function WeekPage() {
               <Badge variant={todayBadge.v as any}>{todayBadge.t}</Badge>
             </div>
             <CardDescription className="mt-1">
-              {format(today, "EEEE d MMM", { locale: undefined })} · {plannedLabel(todayLogged?.type ?? todayPlannedType)}
+              {format(today, "EEEE d MMM")} · {plannedLabel(todayLogged?.type ?? todayPlannedType)}
             </CardDescription>
           </div>
           <div className="grid grid-cols-2 gap-2 md:flex md:justify-end">
@@ -102,9 +102,7 @@ export default function WeekPage() {
 
             <div className="rounded-lg border border-slate-200 bg-white p-4">
               <div className="text-xs font-semibold text-slate-500">Siguiente</div>
-              <div className="mt-1 text-sm text-slate-700">
-                Mar/Jue/Dom · 2 sesiones cortas + 1 largo.
-              </div>
+              <div className="mt-1 text-sm text-slate-700">Mar/Jue/Dom · 2 sesiones cortas + 1 largo.</div>
             </div>
           </div>
         </CardContent>

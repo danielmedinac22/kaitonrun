@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { upsertFile } from "@/lib/github";
 
 export async function POST(req: Request) {
   try {
@@ -14,13 +13,15 @@ export async function POST(req: Request) {
     if (!date) return NextResponse.json({ error: "Missing date" }, { status: 400 });
 
     const workout = { date, type, minutes, rpe, notes };
+    const pathInRepo = `data/workouts/${date}.json`;
 
-    const dir = path.join(process.cwd(), "data", "workouts");
-    fs.mkdirSync(dir, { recursive: true });
-    const outPath = path.join(dir, `${date}.json`);
-    fs.writeFileSync(outPath, JSON.stringify(workout, null, 2));
+    await upsertFile({
+      pathInRepo,
+      content: JSON.stringify(workout, null, 2),
+      message: `log: workout ${date}`,
+    });
 
-    return NextResponse.json({ ok: true, path: `data/workouts/${date}.json` });
+    return NextResponse.json({ ok: true, path: pathInRepo });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "unknown";
     return NextResponse.json({ error: msg }, { status: 500 });

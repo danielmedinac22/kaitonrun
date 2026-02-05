@@ -4,8 +4,8 @@ import HistoryClient from "./ui/HistoryClient";
 
 export const dynamic = "force-dynamic";
 
-export default function HistoryPage() {
-  const workouts = readWorkouts().sort((a, b) => (a.date < b.date ? 1 : -1));
+export default async function HistoryPage() {
+  const workouts = (await readWorkouts()).sort((a, b) => (a.date < b.date ? 1 : -1));
 
   return (
     <main className="space-y-4">
