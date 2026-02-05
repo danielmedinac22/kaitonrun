@@ -1,7 +1,10 @@
 import { format, parseISO, startOfWeek, subWeeks } from "date-fns";
 
+import Link from "next/link";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { readWorkouts } from "@/lib/workouts";
 import { planForDate } from "@/lib/plan";
 
@@ -46,6 +49,11 @@ export default async function InsightsPage() {
   const plannedCount = plannedSessions.length;
   const plannedMinutes = plannedSessions.reduce((acc, p) => acc + (p.targetMinutes ?? 0), 0);
 
+  const plannedRuns = plannedDays.map((d) => planForDate(d)).filter((p) => p.type === "run");
+  const plannedGym = plannedDays.map((d) => planForDate(d)).filter((p) => p.type === "gym");
+  const plannedRunMinutes = plannedRuns.reduce((acc, p) => acc + (p.targetMinutes ?? 0), 0);
+  const plannedGymMinutes = plannedGym.reduce((acc, p) => acc + (p.targetMinutes ?? 0), 0);
+
   const workoutsThisWeek = workouts.filter((w) => {
     const d = parseISO(w.date);
     return d >= start && d < end;
@@ -53,6 +61,11 @@ export default async function InsightsPage() {
 
   const doneCount = workoutsThisWeek.filter((w) => w.type !== "rest").length;
   const doneMinutes = workoutsThisWeek.reduce((acc, w) => acc + (w.minutes ?? 0), 0);
+
+  const doneRuns = workoutsThisWeek.filter((w) => w.type === "run");
+  const doneGym = workoutsThisWeek.filter((w) => w.type === "gym");
+  const doneRunMinutes = doneRuns.reduce((acc, w) => acc + (w.minutes ?? 0), 0);
+  const doneGymMinutes = doneGym.reduce((acc, w) => acc + (w.minutes ?? 0), 0);
 
   const rpes = workoutsThisWeek
     .map((w) => (typeof w.rpe === "number" ? w.rpe : Number(w.rpe)))
@@ -91,8 +104,15 @@ export default async function InsightsPage() {
     <main className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Insights</CardTitle>
-          <CardDescription>Resumen semanal y tendencia.</CardDescription>
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <CardTitle>Insights</CardTitle>
+              <CardDescription>Resumen semanal y tendencia.</CardDescription>
+            </div>
+            <Button asChild variant="secondary">
+              <Link href="/api/export?format=csv">Descargar CSV</Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-4">
@@ -156,9 +176,25 @@ export default async function InsightsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Esta semana (plan)</CardTitle>
-          <CardDescription>Lo planeado según el programa.</CardDescription>
+          <CardDescription>
+            Lo planeado según el programa. Runs: {doneRuns.length}/{plannedRuns.length} ({pct(doneRuns.length, plannedRuns.length)}%) · Gym: {doneGym.length}/{plannedGym.length} ({pct(doneGym.length, plannedGym.length)}%)
+          </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-3 grid gap-2 md:grid-cols-2">
+            <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700">
+              <div className="text-xs font-semibold text-slate-500">Minutos Run</div>
+              <div className="mt-1 font-semibold text-slate-900">
+                {doneRunMinutes} / {plannedRunMinutes} min
+              </div>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700">
+              <div className="text-xs font-semibold text-slate-500">Minutos Gym</div>
+              <div className="mt-1 font-semibold text-slate-900">
+                {doneGymMinutes} / {plannedGymMinutes} min
+              </div>
+            </div>
+          </div>
           <div className="grid gap-2 md:grid-cols-2">
             {plannedDays.map((d) => {
               const p = planForDate(d);
