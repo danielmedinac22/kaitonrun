@@ -4,14 +4,15 @@ import { Activity, Dumbbell, Moon, Target, Shield, ArrowRight, Zap } from "lucid
 
 import QuickMarkDialog from "@/app/ui/QuickMarkDialog";
 import SyncButton from "@/app/ui/SyncButton";
-import CoachCard from "@/app/ui/CoachCard";
+import CoachChat from "@/app/ui/CoachChat";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { planForDate, programMeta } from "@/lib/plan";
+import { planWithOverrides, programMeta } from "@/lib/plan";
 import { readWorkouts, workoutByDate } from "@/lib/workouts";
 import { autoSyncRuns } from "@/lib/strava";
+import { loadOverrides } from "@/lib/athlete";
 
 export const dynamic = "force-dynamic";
 
@@ -46,12 +47,13 @@ export default async function WeekPage() {
 
   const workouts = await readWorkouts();
   const byDate = workoutByDate(workouts);
+  const overrides = await loadOverrides();
 
   const today = new Date();
   const todayKey = dateKey(today);
   const todayLogged = byDate.get(todayKey);
   const todayDow = today.getDay();
-  const todayPlan = planForDate(today);
+  const todayPlan = planWithOverrides(today, overrides);
   const { weekIndex, phase, weeksToRace } = programMeta(today);
 
   const todayBadge = todayLogged
@@ -202,7 +204,7 @@ export default async function WeekPage() {
       </div>
 
       {/* AI COACH */}
-      <CoachCard date={todayKey} hasWorkout={!!todayLogged} />
+      <CoachChat />
 
       {/* WEEK */}
       <Card>
@@ -219,7 +221,7 @@ export default async function WeekPage() {
               const w = byDate.get(key);
               const dow = d.getDay();
               const isPlanned = plannedDow.has(dow);
-              const plan = planForDate(d);
+              const plan = planWithOverrides(d, overrides);
               const isToday = key === todayKey;
 
               const badge = w
@@ -284,6 +286,11 @@ export default async function WeekPage() {
                               <span className="ml-1 text-slate-400">
                                 {plan.targetMinutes ? `${plan.targetMinutes}m` : ""}
                               </span>
+                              {plan.isOverride && (
+                                <span className="inline-flex items-center rounded-full bg-purple-100 px-1.5 py-0.5 text-[9px] font-semibold text-purple-600">
+                                  Coach
+                                </span>
+                              )}
                             </span>
                           </AccordionTrigger>
                           <AccordionContent>
@@ -294,6 +301,11 @@ export default async function WeekPage() {
                             </ul>
                             {plan.rpe && (
                               <div className="mt-1.5 text-xs text-slate-500">RPE {plan.rpe}</div>
+                            )}
+                            {plan.coachNote && (
+                              <div className="mt-2 rounded-md bg-purple-50 px-2 py-1.5 text-xs text-purple-700">
+                                Coach: {plan.coachNote}
+                              </div>
                             )}
                           </AccordionContent>
                         </AccordionItem>
