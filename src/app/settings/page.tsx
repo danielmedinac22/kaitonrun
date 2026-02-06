@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { loadTokens } from "@/lib/strava";
 import { programMeta } from "@/lib/plan";
 import StravaClient from "@/app/strava/ui/StravaClient";
+import ZonesCard from "@/app/ui/ZonesCard";
 
 export const dynamic = "force-dynamic";
 
@@ -90,6 +91,9 @@ export default async function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* TRAINING ZONES */}
+      <ZonesCard />
+
       {/* PLAN INFO */}
       <Card>
         <CardHeader>
@@ -139,7 +143,7 @@ export default async function SettingsPage() {
           </div>
           <div className="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
             <Zap className="h-3 w-3" />
-            Powered by Next.js + Strava API + GitHub API
+            Powered by Next.js + OpenAI + Strava API + GitHub API
           </div>
         </CardContent>
       </Card>

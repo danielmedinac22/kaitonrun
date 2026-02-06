@@ -4,6 +4,7 @@ import { Activity, Dumbbell, Moon, Target, Shield, ArrowRight, Zap } from "lucid
 
 import QuickMarkDialog from "@/app/ui/QuickMarkDialog";
 import SyncButton from "@/app/ui/SyncButton";
+import CoachCard from "@/app/ui/CoachCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -199,6 +200,9 @@ export default async function WeekPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* AI COACH */}
+      <CoachCard date={todayKey} hasWorkout={!!todayLogged} />
 
       {/* WEEK */}
       <Card>
