@@ -74,7 +74,7 @@ export default async function WeekPage() {
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
                 {typeIcon(todayLogged?.type ?? todayPlan.type)}
               </span>
-              <CardTitle className="text-lg">Plan de hoy</CardTitle>
+              <CardTitle className="text-lg">Hoy</CardTitle>
               <Badge variant={todayBadge.v}>{todayBadge.t}</Badge>
             </div>
             <CardDescription className="mt-2">

@@ -139,7 +139,7 @@ export default async function InsightsPage({
         <CardHeader>
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
-              <CardTitle>Insights</CardTitle>
+              <CardTitle>Progreso</CardTitle>
               <CardDescription>Resumen y tendencia de entrenamiento.</CardDescription>
             </div>
 
