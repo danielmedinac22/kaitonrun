@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Activity, Dumbbell, Moon, Loader2, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 type WorkoutType = "run" | "gym" | "rest";
+
+const typeOptions: { key: WorkoutType; label: string; icon: React.ReactNode }[] = [
+  { key: "run", label: "Correr", icon: <Activity className="h-4 w-4" /> },
+  { key: "gym", label: "Gym", icon: <Dumbbell className="h-4 w-4" /> },
+  { key: "rest", label: "Descanso", icon: <Moon className="h-4 w-4" /> },
+];
 
 export default function QuickMarkDialog({
   date,
@@ -20,7 +27,8 @@ export default function QuickMarkDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const [type, setType] = useState<WorkoutType>(defaultType);
   const [minutes, setMinutes] = useState<string>(defaultType === "rest" ? "0" : "");
@@ -35,9 +43,9 @@ export default function QuickMarkDialog({
 
   async function save() {
     setSaving(true);
-    setStatus("Guardando...");
+    setStatus("saving");
     try {
-      const payload: any = { date, type };
+      const payload: Record<string, string> = { date, type };
       if (minutes) payload.minutes = minutes;
       if (rpe) payload.rpe = rpe;
       if (notes) payload.notes = notes;
@@ -50,14 +58,14 @@ export default function QuickMarkDialog({
       const j = await res.json().catch(() => null);
       if (!res.ok) throw new Error(j?.error || "No se pudo guardar");
 
-      setStatus("Listo. Guardado.");
-      // close and refresh
+      setStatus("success");
       setTimeout(() => {
         setOpen(false);
         window.location.reload();
-      }, 350);
-    } catch (e: any) {
-      setStatus(e?.message || "Error");
+      }, 600);
+    } catch (e: unknown) {
+      setStatus("error");
+      setErrorMsg(e instanceof Error ? e.message : "Error");
     } finally {
       setSaving(false);
     }
@@ -74,31 +82,29 @@ export default function QuickMarkDialog({
         <DialogHeader>
           <DialogTitle>Marcar como hecho</DialogTitle>
           <DialogDescription>
-            Guarda el entrenamiento de hoy (queda versionado en GitHub).
+            Registra el entrenamiento del {date}.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
+          {/* Type selection */}
           <div className="grid gap-2">
             <Label>Tipo</Label>
             <div className="grid grid-cols-3 gap-2">
-              {([
-                { k: "run", t: "Run" },
-                { k: "gym", t: "Gym" },
-                { k: "rest", t: "Rest" },
-              ] as const).map((x) => (
+              {typeOptions.map((opt) => (
                 <button
-                  key={x.k}
+                  key={opt.key}
                   type="button"
-                  onClick={() => setType(x.k)}
+                  onClick={() => setType(opt.key)}
                   className={
-                    "h-10 rounded-md border px-3 text-sm font-medium " +
-                    (type === x.k
-                      ? "border-indigo-200 bg-indigo-50 text-indigo-800"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50")
+                    "flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-all " +
+                    (type === opt.key
+                      ? "border-indigo-300 bg-indigo-50 text-indigo-700 shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50")
                   }
                 >
-                  {x.t}
+                  {opt.icon}
+                  {opt.label}
                 </button>
               ))}
             </div>
@@ -131,13 +137,30 @@ export default function QuickMarkDialog({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Sensaciones, molestias, energía..."
+              rows={3}
             />
           </div>
 
           <div className="flex items-center justify-between">
-            <div className="text-sm text-slate-500">{status}</div>
+            {status === "success" ? (
+              <div className="animate-fade-in flex items-center gap-1.5 text-sm font-medium text-emerald-600">
+                <Check className="h-4 w-4" />
+                Guardado
+              </div>
+            ) : status === "error" ? (
+              <div className="animate-fade-in text-sm font-medium text-red-600">{errorMsg}</div>
+            ) : (
+              <div />
+            )}
             <Button disabled={!canSave || saving} onClick={save}>
-              Guardar
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                "Guardar"
+              )}
             </Button>
           </div>
         </div>
