@@ -145,26 +145,51 @@ export type StravaActivity = {
   max_heartrate?: number;
   suffer_score?: number;
   total_elevation_gain?: number;
+  average_speed?: number;
+  max_speed?: number;
+  average_cadence?: number;
+  has_heartrate?: boolean;
 };
 
 export async function fetchActivities(
   accessToken: string,
   afterEpoch: number,
-  perPage = 50,
+  perPage = 200,
+  maxPages = 20,
 ): Promise<StravaActivity[]> {
   const all: StravaActivity[] = [];
   let page = 1;
 
-  while (page <= 10) {
+  while (page <= maxPages) {
     const url = new URL("https://www.strava.com/api/v3/athlete/activities");
     url.searchParams.set("after", String(afterEpoch));
-    url.searchParams.set("per_page", String(perPage));
+    url.searchParams.set("per_page", String(Math.min(perPage, 200)));
     url.searchParams.set("page", String(page));
 
     const res = await fetch(url.toString(), {
       headers: { Authorization: `Bearer ${accessToken}` },
       cache: "no-store",
     });
+
+    if (res.status === 429) {
+      // Rate limited — wait and retry once
+      await new Promise((r) => setTimeout(r, 2000));
+      const retry = await fetch(url.toString(), {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        cache: "no-store",
+      });
+      if (!retry.ok) {
+        // Return what we have so far instead of failing completely
+        break;
+      }
+      const batch: StravaActivity[] = await retry.json();
+      if (batch.length === 0) break;
+      all.push(...batch);
+      if (batch.length < perPage) break;
+      page++;
+      continue;
+    }
+
     if (!res.ok) {
       const txt = await res.text();
       throw new Error(`Strava activities fetch failed (${res.status}): ${txt}`);
@@ -203,11 +228,23 @@ export function stravaActivityToNotes(a: StravaActivity): string {
   if (a.distance > 0) {
     parts.push(`${(a.distance / 1000).toFixed(2)} km`);
   }
+  if (a.distance > 0 && a.moving_time > 0) {
+    const paceMinKm = (a.moving_time / 60) / (a.distance / 1000);
+    const paceMins = Math.floor(paceMinKm);
+    const paceSecs = Math.round((paceMinKm - paceMins) * 60);
+    parts.push(`Ritmo ${paceMins}:${String(paceSecs).padStart(2, "0")} min/km`);
+  }
   if (a.average_heartrate) {
     parts.push(`FC avg ${Math.round(a.average_heartrate)} bpm`);
   }
+  if (a.max_heartrate) {
+    parts.push(`FC max ${Math.round(a.max_heartrate)} bpm`);
+  }
   if (a.total_elevation_gain && a.total_elevation_gain > 0) {
     parts.push(`${Math.round(a.total_elevation_gain)}m D+`);
+  }
+  if (a.suffer_score) {
+    parts.push(`Suffer ${a.suffer_score}`);
   }
   return parts.join(" · ");
 }

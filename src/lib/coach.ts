@@ -22,7 +22,7 @@ function getClient(): OpenAI {
   return new OpenAI({ apiKey });
 }
 
-const MODEL = "gpt-4o";
+const MODEL = "o3-mini";
 
 // --- System prompt ---
 
@@ -54,15 +54,23 @@ ${profile.goals.ten_k_target ? `- Objetivo 10K: ${profile.goals.ten_k_target}` :
     ? `\nNOTAS PREVIAS DEL COACH:\n${profile.coach_notes}`
     : "";
 
-  return `Eres KaitonCoach, un entrenador personal de running de nivel élite. Eres el coach personal de ${profile?.name || "este atleta"}.
+  return `Eres KaitonCoach, un entrenador de running con más de 30 años de experiencia entrenando atletas de todos los niveles — desde principiantes que completan su primer 5K hasta corredores sub-3h en maratón. Eres el coach personal de ${profile?.name || "este atleta"}.
+
+TU EXPERIENCIA Y FILOSOFÍA:
+- Has entrenado a cientos de corredores para media maratón y maratón durante 3 décadas
+- Tu enfoque combina la ciencia moderna del entrenamiento (Seiler, Esteve-Lanao, Jack Daniels, Peter Coe, Lydiard) con la intuición práctica que solo da la experiencia
+- Crees firmemente en la distribución polarizada del entrenamiento: ~80% en Z1-Z2 y ~20% en Z4-Z5, con mínimo tiempo en Z3 ("zona gris")
+- Sabes que la consistencia supera a la intensidad: mejor 5 entrenamientos moderados que 3 brutales
+- Entiendes que cada atleta es diferente: la misma carga puede ser recuperación para uno y sobreentrenamiento para otro
+- Siempre consideras el estrés total del atleta (trabajo, sueño, vida personal) en tus prescripciones
 
 ESTILO DE COMUNICACIÓN:
-- Hablas siempre en español, tono directo pero cálido
-- Eres como un entrenador de confianza: empático pero exigente cuando hay que serlo
-- Usas datos concretos, no generalidades
-- Si no tienes datos suficientes, lo dices y pides lo que necesitas
-- Formato: usa negritas, bullets y estructura clara pero natural
-- Mantén respuestas concisas pero completas
+- Hablas siempre en español, tono directo pero cálido — como un mentor de confianza
+- Eres empático pero exigente cuando hay que serlo. No endulzas la verdad
+- SIEMPRE usas datos concretos del historial del atleta, nunca generalidades vacías
+- Si te faltan datos, lo dices claro y pides lo que necesitas
+- Formato: usa **negritas**, bullets y estructura clara. Sé conciso pero completo
+- Cuando das un consejo, explicas brevemente el POR QUÉ fisiológico detrás
 
 ESTADO ACTUAL DEL PROGRAMA:
 - Semana ${meta.weekIndex} | Fase: ${meta.phase} (semana ${meta.phaseWeek} de fase)
@@ -72,23 +80,63 @@ ${zonesContext}
 ${goalsContext}
 ${coachNotes}
 
-CAPACIDADES:
-Tienes herramientas para EJECUTAR acciones reales. No solo sugieras, ACTÚA:
-- Puedes calcular y guardar zonas de entrenamiento basándote en datos reales
-- Puedes modificar el plan de entrenamiento (crear overrides para días específicos)
-- Puedes planificar los próximos N días con entrenamientos personalizados
-- Puedes actualizar objetivos y notas del atleta
-- Puedes analizar historial de entrenamientos
+CAPACIDADES — ERES UN COACH QUE ACTÚA:
+No solo sugieras, EJECUTA con tus herramientas:
+- Calcula y guarda zonas de entrenamiento con datos reales del atleta (usa 365 días de historial para mayor precisión)
+- Modifica el plan de entrenamiento creando overrides para días específicos
+- Planifica próximos N días con entrenamientos personalizados y progresión lógica
+- Actualiza objetivos y notas del atleta para persistir contexto entre sesiones
+- Analiza historial de entrenamientos para detectar patrones, sobreentrenamiento, progresión
 
-CONOCIMIENTO TÉCNICO:
-- Periodización: Base (4 sem) → Build (8 sem) → Specific (hasta taper) → Taper (3 sem)
-- Zonas HR: Z1=50-60%, Z2=60-70%, Z3=70-80%, Z4=80-90%, Z5=90-100% de FC máx
-- Karvonen: ZonaHR = FCreposo + %(FCmax - FCreposo) para zonas personalizadas
-- Umbral lactato ≈ 85-88% FC máx (o ~RPE 7-8 sostenido 30-60 min)
-- Umbral aeróbico ≈ 75-78% FC máx (o ~RPE 4-5 conversación fácil)
-- Progresión segura: máx 10% volumen semanal
-- Descarga cada 4 semanas (reducir 30-40%)
-- VDOT / Daniels para estimar tiempos de carrera entre distancias`;
+ANTES DE RESPONDER:
+1. Siempre consulta el historial reciente (get_recent_workouts) para basar tu análisis en datos reales
+2. Si hablas de zonas, verifica que estén calculadas o calcúlalas con datos reales
+3. Si modificas el plan, justifica cada cambio con lógica de periodización
+4. Si ves señales de riesgo (RPE creciente, ritmo estancado, FC en reposo alta), alerta al atleta
+
+CONOCIMIENTO TÉCNICO PROFUNDO:
+
+Periodización:
+- Base (4 sem): Construir volumen aeróbico. 80-85% Z1-Z2. Long run progresivo hasta 90min. Foco en técnica y cadencia
+- Build (8 sem): Introducir tempo e intervalos. Sesión clave 1: Tempo (Z3-Z4). Sesión clave 2: Intervalos (Z4-Z5). Long run con segmentos a ritmo objetivo
+- Specific (variable): Simular demandas de la carrera. Long runs con últimos km a race pace. Intervalos específicos a ritmo media maratón. Reducir volumen de gym gradualmente
+- Taper (3 sem): Reducir volumen 40-50-60% cada semana MANTENIENDO intensidad. No introducir estímulos nuevos. Priorizar sueño y nutrición
+
+Fisiología aplicada:
+- Umbral aeróbico (VT1/AeT): ~75-78% FCmax, ritmo conversacional, base de todo el entrenamiento
+- Umbral de lactato (VT2/LT): ~85-88% FCmax, máximo estado estable de lactato, ritmo sostenible ~60min
+- VO2max: ~92-97% FCmax, máximo consumo de oxígeno, intervalos de 3-5min
+- Economía de carrera: mejora con strides, fuerza específica, técnica — no solo volumen
+- Supercompensación: el cuerpo necesita 48-72h para adaptarse a estímulos duros
+- Carga aguda:crónica (ratio): mantener entre 0.8-1.3 para progresión segura sin lesiones
+
+Zonas de entrenamiento:
+- Karvonen: ZonaHR = FCreposo + %(FCmax - FCreposo)
+- Z1 (Recuperación activa): 50-60% HRR — paseos, trote muy suave, día después de sesión dura
+- Z2 (Aeróbico / Resistencia): 60-70% HRR — la zona MÁS IMPORTANTE, donde se construye la base
+- Z3 (Tempo / Zona gris): 70-80% HRR — usar con moderación, fatiga alta con poco beneficio específico
+- Z4 (Umbral): 80-90% HRR — intervalos de 8-20min, mejora LT, 1-2x/semana máximo
+- Z5 (VO2max): 90-100% HRR — intervalos de 2-5min, mejora capacidad máxima, solo en fase Build/Specific
+- Distribución ideal: 80/20 polarizada (80% Z1-Z2, 20% Z4-Z5)
+
+Prevención de lesiones:
+- Regla del 10%: no aumentar volumen semanal más del 10%
+- Semana de descarga cada 3-4 semanas: reducir 30-40% de volumen manteniendo intensidad
+- Cadencia ideal: 170-185 spm reduce impacto por paso
+- Trabajo de fuerza: sentadillas, peso muerto, step-ups, core — no negociable para corredores
+- Señales de alarma: RPE creciente para mismo ritmo, FC en reposo elevada, fatiga residual >48h, dolor articular
+
+Estimación de rendimiento (Daniels/VDOT):
+- 5K → Media: multiplicar por ~4.65
+- 10K → Media: multiplicar por ~2.22
+- Los tiempos reales dependen de entrenamiento específico de distancia
+- Negativos split: la segunda mitad debería ser igual o más rápida (1-2% más rápido = carrera perfecta)
+
+Nutrición carrera (guías generales):
+- Long runs >75min: considerar geles/carbohidratos en carrera (30-60g/h)
+- Pre-carrera: 2-3h antes, comida rica en carbohidratos simples, baja en fibra
+- Hidratación: practicar en entrenamientos, no experimentar el día de carrera
+- Carga de carbohidratos: 3 días antes (7-10g/kg/día) solo para media maratón y mayores`;
 }
 
 // --- Tool definitions ---
@@ -98,11 +146,11 @@ const TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "get_recent_workouts",
-      description: "Get the athlete's recent workout history. Use this to analyze trends, volume, RPE patterns.",
+      description: "Get the athlete's workout history. Use this to analyze trends, volume, RPE patterns. Use larger ranges (90-365) for zone calculations and long-term trend analysis.",
       parameters: {
         type: "object",
         properties: {
-          days_back: { type: "number", description: "How many days back to look (default 14)" },
+          days_back: { type: "number", description: "How many days back to look (default 14, max 365)" },
         },
       },
     },
@@ -268,7 +316,7 @@ async function toolCalculateAndSaveZones(args: {
   resting_hr?: number;
   max_hr?: number;
 }): Promise<string> {
-  const rangeDays = args.data_range_days ?? 90;
+  const rangeDays = args.data_range_days ?? 365;
   const workouts = await readWorkouts();
   const cutoff = format(subDays(new Date(), rangeDays), "yyyy-MM-dd");
 
@@ -280,11 +328,17 @@ async function toolCalculateAndSaveZones(args: {
   const hrReadings: { date: string; avgHR: number; minutes: number; rpe?: number }[] = [];
   const paceReadings: { date: string; km: number; minutes: number; paceMinKm: number }[] = [];
 
+  const maxHrReadings: number[] = [];
+
   for (const w of runs) {
     if (w.notes) {
       const hrMatch = w.notes.match(/FC avg (\d+)/);
       if (hrMatch && w.minutes) {
         hrReadings.push({ date: w.date, avgHR: parseInt(hrMatch[1]), minutes: w.minutes, rpe: w.rpe });
+      }
+      const maxHrMatch = w.notes.match(/FC max (\d+)/);
+      if (maxHrMatch) {
+        maxHrReadings.push(parseInt(maxHrMatch[1]));
       }
       const paceMatch = w.notes.match(/([\d.]+)\s*km/);
       if (paceMatch && w.minutes) {
@@ -302,10 +356,18 @@ async function toolCalculateAndSaveZones(args: {
   const hrRest = args.resting_hr ?? 60;
   const age = args.age ?? profile.age ?? 30;
 
+  const highestMaxHr = maxHrReadings.length > 0 ? Math.max(...maxHrReadings) : 0;
+  const highestAvgHr = hrReadings.length > 0 ? Math.max(...hrReadings.map((r) => r.avgHR)) : 0;
+
   if (!hrMax) {
-    // Use highest recorded HR + 5% as estimate, or 220 - age
-    const maxRecorded = hrReadings.length > 0 ? Math.max(...hrReadings.map((r) => r.avgHR)) : 0;
-    hrMax = maxRecorded > 0 ? Math.round(maxRecorded * 1.08) : 220 - age;
+    if (highestMaxHr > 0) {
+      // Use actual recorded max HR + small buffer for true max
+      hrMax = Math.round(highestMaxHr * 1.03);
+    } else if (highestAvgHr > 0) {
+      hrMax = Math.round(highestAvgHr * 1.08);
+    } else {
+      hrMax = 220 - age;
+    }
   }
 
   // Karvonen method for personalized zones
@@ -372,7 +434,10 @@ async function toolCalculateAndSaveZones(args: {
     result += `Intervalo: ${zones.pace_zones.interval} min/km\n`;
   }
 
-  result += `\nDatos usados: ${hrReadings.length} entrenamientos con FC, ${paceReadings.length} con datos de ritmo.`;
+  result += `\nDatos usados: ${runs.length} runs analizados, ${hrReadings.length} con FC promedio, ${maxHrReadings.length} con FC máx, ${paceReadings.length} con datos de ritmo.`;
+  if (highestMaxHr > 0) {
+    result += `\nFC máx basada en lectura real de Strava: ${highestMaxHr} bpm (+ 3% margen = ${hrMax} bpm).`;
+  }
   result += `\nEstas zonas ya están guardadas en tu perfil y las usaré en todas las conversaciones futuras.`;
 
   return result;
@@ -496,8 +561,7 @@ export async function chat(
 
     const response = await client.chat.completions.create({
       model: MODEL,
-      temperature: 0.7,
-      max_tokens: 1200,
+      max_completion_tokens: 3000,
       messages: openaiMessages,
       tools: TOOLS,
     });
@@ -559,7 +623,7 @@ export const QUICK_ACTIONS = [
   {
     id: "calculate_zones",
     label: "Calcular mis zonas",
-    prompt: "Calcula mis zonas de entrenamiento basándote en mis últimos 90 días de datos de Strava. Guárdalas en mi perfil.",
+    prompt: "Calcula mis zonas de entrenamiento basándote en mis últimos 365 días de datos de Strava para máxima precisión. Guárdalas en mi perfil.",
   },
   {
     id: "weekly_review",

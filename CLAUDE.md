@@ -9,7 +9,7 @@ Training log MVP for running and gym workouts, built for half-marathon preparati
 - **Styling:** Tailwind CSS 3.4 + Radix UI primitives (shadcn/ui pattern)
 - **Validation:** Zod 4
 - **Data persistence:** GitHub API (JSON files in `data/workouts/`)
-- **AI Coach:** OpenAI API (gpt-4o-mini) for workout analysis, training zones, plan adjustments
+- **AI Coach:** OpenAI API (o3-mini) for workout analysis, training zones, plan adjustments
 - **Deploy target:** Vercel
 
 ## Commands
