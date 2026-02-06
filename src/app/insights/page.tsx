@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { readWorkouts } from "@/lib/workouts";
 import { planForDate } from "@/lib/plan";
-import WeeklyReviewCard from "@/app/ui/WeeklyReviewCard";
+import CoachChat from "@/app/ui/CoachChat";
 
 function dateKey(d: Date) {
   return format(d, "yyyy-MM-dd");
@@ -328,8 +328,8 @@ export default async function InsightsPage({
         </CardContent>
       </Card>
 
-      {/* AI WEEKLY REVIEW */}
-      <WeeklyReviewCard />
+      {/* AI COACH */}
+      <CoachChat />
 
       {/* Weekly breakdown */}
       <Card>

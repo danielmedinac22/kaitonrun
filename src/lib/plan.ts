@@ -8,6 +8,8 @@ export type PlanItem = {
   targetMinutes?: number;
   rpe?: string;
   details: string[];
+  coachNote?: string; // note from AI coach when plan was overridden
+  isOverride?: boolean;
 };
 
 export type PlanPhase = "base" | "build" | "specific" | "taper";
@@ -219,4 +221,28 @@ export function planForDate(date: Date): PlanItem {
     title: "Descanso / movilidad",
     details: ["Movilidad 10–15 min", "Caminata ligera opcional"],
   };
+}
+
+/**
+ * Apply overrides on top of the algorithmic plan.
+ * Overrides is a map of YYYY-MM-DD -> PlanOverride.
+ */
+export function planWithOverrides(
+  date: Date,
+  overrides: Record<string, { type: PlanItemType; title: string; targetMinutes?: number; rpe?: string; details: string[]; coachNote?: string }>,
+): PlanItem {
+  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  const override = overrides[key];
+  if (override) {
+    return {
+      type: override.type,
+      title: override.title,
+      targetMinutes: override.targetMinutes,
+      rpe: override.rpe,
+      details: override.details,
+      coachNote: override.coachNote,
+      isOverride: true,
+    };
+  }
+  return planForDate(date);
 }
