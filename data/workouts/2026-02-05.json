@@ -2,5 +2,6 @@
   "date": "2026-02-05",
   "type": "run",
   "minutes": 32,
-  "notes": "Strava: Evening Run · 5.07 km · FC avg 163 bpm · 24m D+"
+  "notes": "Strava: Evening Run · 5.07 km · FC avg 163 bpm · 24m D+",
+  "source": "strava"
 }
