@@ -73,19 +73,26 @@ export default function StravaClient({
         <div className="flex flex-wrap items-end gap-3">
           <label className="grid gap-1.5 text-sm">
             <span className="font-medium text-slate-700">Días a sincronizar</span>
-            <div className="flex gap-2">
-              {["7", "14", "30"].map((d) => (
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: "7", label: "7d" },
+                { value: "14", label: "14d" },
+                { value: "30", label: "30d" },
+                { value: "90", label: "90d" },
+                { value: "180", label: "6m" },
+                { value: "365", label: "1 año" },
+              ].map((d) => (
                 <button
-                  key={d}
-                  onClick={() => setDays(d)}
+                  key={d.value}
+                  onClick={() => setDays(d.value)}
                   className={
                     "rounded-lg border px-3 py-1.5 text-sm font-medium transition-all " +
-                    (days === d
+                    (days === d.value
                       ? "border-orange-300 bg-orange-50 text-orange-700"
                       : "border-slate-200 bg-white text-slate-600 hover:border-slate-300")
                   }
                 >
-                  {d}d
+                  {d.label}
                 </button>
               ))}
             </div>

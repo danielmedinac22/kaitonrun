@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Heart } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Heart, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 type Zones = {
@@ -52,7 +52,8 @@ export default function ZonesCard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchProfile = useCallback(() => {
+    setLoading(true);
     fetch("/api/profile")
       .then((r) => r.json())
       .then((data) => {
@@ -61,6 +62,30 @@ export default function ZonesCard() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  // Listen for custom event from coach when zones are updated
+  useEffect(() => {
+    function onZonesUpdated() {
+      fetchProfile();
+    }
+    window.addEventListener("zones-updated", onZonesUpdated);
+    return () => window.removeEventListener("zones-updated", onZonesUpdated);
+  }, [fetchProfile]);
+
+  // Also refetch when tab becomes visible (user might have used coach in another tab)
+  useEffect(() => {
+    function onVisibility() {
+      if (document.visibilityState === "visible") {
+        fetchProfile();
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [fetchProfile]);
 
   const zones = profile?.zones;
 
@@ -79,10 +104,19 @@ export default function ZonesCard() {
                 : "Pídele al coach que calcule tus zonas."}
             </CardDescription>
           </div>
+          {zones && (
+            <button
+              onClick={fetchProfile}
+              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+              title="Actualizar zonas"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            </button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
-        {loading && <p className="text-sm text-slate-400">Cargando...</p>}
+        {loading && !profile && <p className="text-sm text-slate-400">Cargando...</p>}
 
         {!loading && !zones && (
           <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
@@ -92,7 +126,7 @@ export default function ZonesCard() {
           </div>
         )}
 
-        {!loading && zones && (
+        {zones && (
           <div className="space-y-4">
             {/* HR Zones */}
             <div className="grid gap-1.5">

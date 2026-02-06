@@ -5,7 +5,7 @@ import {
   ClipboardList,
   Plus,
   TrendingUp,
-  Settings,
+  User,
   PlusCircle,
 } from "lucide-react";
 import { NavLink, MobileNavLink } from "@/app/ui/NavLink";
@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <NavLink href="/" label="Hoy" icon={<Home className="h-4 w-4" />} />
                 <NavLink href="/history" label="Historial" icon={<ClipboardList className="h-4 w-4" />} />
                 <NavLink href="/insights" label="Progreso" icon={<TrendingUp className="h-4 w-4" />} />
-                <NavLink href="/settings" label="Ajustes" icon={<Settings className="h-4 w-4" />} />
+                <NavLink href="/settings" label="Perfil" icon={<User className="h-4 w-4" />} />
                 <Link
                   href="/log"
                   className="ml-2 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
@@ -84,8 +84,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               />
               <MobileNavLink
                 href="/settings"
-                label="Ajustes"
-                icon={<Settings className="h-5 w-5" />}
+                label="Perfil"
+                icon={<User className="h-5 w-5" />}
               />
             </div>
           </nav>

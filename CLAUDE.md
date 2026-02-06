@@ -9,7 +9,7 @@ Training log MVP for running and gym workouts, built for half-marathon preparati
 - **Styling:** Tailwind CSS 3.4 + Radix UI primitives (shadcn/ui pattern)
 - **Validation:** Zod 4
 - **Data persistence:** GitHub API (JSON files in `data/workouts/`)
-- **AI Coach:** OpenAI API (o3-mini) for workout analysis, training zones, plan adjustments
+- **AI Coach:** OpenAI API (GPT-5.2) for workout analysis, training zones, plan adjustments
 - **Deploy target:** Vercel
 
 ## Commands
@@ -36,7 +36,7 @@ src/
 │   ├── log/                # Workout logging page & form
 │   ├── history/            # Searchable workout history
 │   ├── insights/           # Analytics dashboard (Progreso) + AI weekly review
-│   ├── settings/           # Settings: Strava, zones, export, plan info
+│   ├── settings/           # Profile: athlete info, goals, zones, Strava, export
 │   ├── strava/             # Strava OAuth redirect handler
 │   ├── layout.tsx          # Root layout with 5-tab mobile nav + desktop header
 │   ├── loading.tsx         # Streaming suspense loading skeleton
@@ -67,7 +67,7 @@ data/workouts/              # Workout JSON files (YYYY-MM-DD.json)
 - **Training plan is algorithmic:** Generated dynamically in `lib/plan.ts` based on current date, start date, and race date. Phases: Base -> Build -> Specific -> Taper.
 - **Strava integration:** OAuth2 flow for connecting Strava accounts. Activities are fetched via the Strava API and mapped to KaitonRun workout format. Tokens are stored in `data/strava-tokens.json` via GitHub API. Auto-sync on home page load (1h cooldown). Only runs are auto-synced; gym/rest are manual.
 - **AI Coach (`lib/coach.ts`):** Uses OpenAI gpt-4o-mini with a detailed running coach system prompt. Supports: post-workout analysis, pre-workout briefing, weekly review, training zone calculation, and plan adjustment suggestions. All coaching is context-aware (uses recent workouts, current phase, plan targets).
-- **Navigation:** 5-tab mobile bottom nav (Hoy | Historial | +Registrar | Progreso | Ajustes) with center FAB for logging. Desktop has icon nav + CTA button. Based on Strava/NRC/TrainingPeaks UX patterns.
+- **Navigation:** 5-tab mobile bottom nav (Hoy | Historial | +Registrar | Progreso | Perfil) with center FAB for logging. Desktop has icon nav + CTA button. Based on Strava/NRC/TrainingPeaks UX patterns.
 - **Path alias:** `@/*` maps to `./src/*`.
 
 ## Environment Variables
