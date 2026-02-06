@@ -1,7 +1,7 @@
 {
   "date": "2025-07-18",
-  "type": "rest",
-  "minutes": 25,
-  "notes": "Strava: Morning Walk · 2.40 km · Ritmo 10:31 min/km · FC avg 96 bpm · FC max 104 bpm · 5m D+",
+  "type": "gym",
+  "minutes": 40,
+  "notes": "Strava: Morning Weight Training · FC avg 117 bpm · FC max 148 bpm",
   "source": "strava"
 }
