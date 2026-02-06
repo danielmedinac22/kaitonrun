@@ -1,7 +1,7 @@
 {
   "date": "2025-08-10",
-  "type": "run",
-  "minutes": 53,
-  "notes": "Strava: Morning Ride · FC avg 120 bpm · FC max 136 bpm",
+  "type": "rest",
+  "minutes": 15,
+  "notes": "Strava: Afternoon Walk · 1.35 km · Ritmo 10:51 min/km · FC avg 96 bpm · FC max 104 bpm · 6m D+",
   "source": "strava"
 }
