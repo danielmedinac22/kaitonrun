@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
     if (!date) return NextResponse.json({ error: "Missing date" }, { status: 400 });
 
-    const workout = { date, type, minutes, rpe, notes };
+    const workout = { date, type, minutes, rpe, notes, source: "manual" as const };
     const pathInRepo = `data/workouts/${date}.json`;
 
     await upsertFile({

@@ -4,6 +4,8 @@ import {
   fetchActivities,
   mapStravaType,
   stravaActivityToNotes,
+  isRunActivity,
+  saveTokens,
 } from "@/lib/strava";
 import { upsertFile } from "@/lib/github";
 import type { Workout } from "@/lib/workouts";
@@ -12,20 +14,25 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
 
-    // Default: sync last 7 days
+    // Default: sync last 7 days, runs only
     const daysBack = Number(body.days) || 7;
+    const runsOnly = body.runsOnly !== false; // default true
     const afterEpoch = Math.floor(Date.now() / 1000) - daysBack * 86400;
 
-    const { token } = await getValidAccessToken();
+    const { token, tokens } = await getValidAccessToken();
     const activities = await fetchActivities(token, afterEpoch);
+
+    // Filter to runs only if requested
+    const toSync = runsOnly
+      ? activities.filter((a) => isRunActivity(a.type))
+      : activities;
 
     let synced = 0;
     let skipped = 0;
 
-    for (const a of activities) {
-      // Extract date from start_date_local (ISO 8601)
-      const dateStr = a.start_date_local.slice(0, 10); // YYYY-MM-DD
-      const type = mapStravaType(a.type);
+    for (const a of toSync) {
+      const dateStr = a.start_date_local.slice(0, 10);
+      const type = runsOnly ? ("run" as const) : mapStravaType(a.type);
       const minutes = Math.round(a.moving_time / 60);
       const notes = stravaActivityToNotes(a);
 
@@ -34,6 +41,7 @@ export async function POST(req: NextRequest) {
         type,
         minutes,
         notes,
+        source: "strava",
       };
 
       const filePath = `data/workouts/${dateStr}.json`;
@@ -50,9 +58,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Update last sync time
+    tokens.last_sync_at = Math.floor(Date.now() / 1000);
+    try {
+      await saveTokens(tokens);
+    } catch {
+      // non-critical
+    }
+
     return Response.json({
       ok: true,
       total: activities.length,
+      runs: toSync.length,
       synced,
       skipped,
     });

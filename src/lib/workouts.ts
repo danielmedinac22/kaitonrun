@@ -5,6 +5,7 @@ export type Workout = {
   minutes?: number;
   rpe?: number;
   notes?: string;
+  source?: "strava" | "manual";
 };
 
 import { getFileContent, listRepoDir } from "@/lib/github";
