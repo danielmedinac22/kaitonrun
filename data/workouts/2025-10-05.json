@@ -1,7 +1,7 @@
 {
   "date": "2025-10-05",
-  "type": "run",
-  "minutes": 43,
-  "notes": "Strava: Lunch Swim · 0.89 km · Ritmo 47:53 min/km · FC avg 119 bpm · FC max 147 bpm",
+  "type": "gym",
+  "minutes": 68,
+  "notes": "Strava: Afternoon HIIT · FC avg 125 bpm · FC max 159 bpm",
   "source": "strava"
 }
