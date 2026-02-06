@@ -1,14 +1,16 @@
 import { addDays, format, startOfWeek } from "date-fns";
 import Link from "next/link";
-import { Activity, Dumbbell, Moon, Target, Shield, ArrowRight } from "lucide-react";
+import { Activity, Dumbbell, Moon, Target, Shield, ArrowRight, Zap } from "lucide-react";
 
 import QuickMarkDialog from "@/app/ui/QuickMarkDialog";
+import SyncButton from "@/app/ui/SyncButton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { planForDate, programMeta } from "@/lib/plan";
 import { readWorkouts, workoutByDate } from "@/lib/workouts";
+import { autoSyncRuns } from "@/lib/strava";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +37,9 @@ function typeIcon(type: string) {
 }
 
 export default async function WeekPage() {
+  // Auto-sync runs from Strava (respects 1-hour cooldown)
+  await autoSyncRuns(7);
+
   const base = startOfWeek(new Date(), { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }).map((_, i) => addDays(base, i));
 
@@ -123,6 +128,7 @@ export default async function WeekPage() {
                 triggerText={todayLogged ? "Editar rápido" : "Marcar hecho"}
               />
             </div>
+            <SyncButton />
           </div>
         </CardContent>
       </Card>
@@ -138,7 +144,15 @@ export default async function WeekPage() {
             <div className="mt-2 text-sm text-slate-700">
               {todayLogged ? (
                 <div>
-                  <div className="font-medium text-emerald-700">Registrado</div>
+                  <div className="flex items-center gap-2 font-medium text-emerald-700">
+                    Registrado
+                    {todayLogged.source === "strava" && (
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-orange-100 px-1.5 py-0.5 text-[10px] font-semibold text-orange-600">
+                        <Zap className="h-2.5 w-2.5" />
+                        Strava
+                      </span>
+                    )}
+                  </div>
                   <div className="mt-1 text-slate-500">
                     {typeLabel(todayLogged.type)}
                     {todayLogged.minutes ? ` · ${todayLogged.minutes} min` : ""}
@@ -243,6 +257,12 @@ export default async function WeekPage() {
                         <div className="flex items-center gap-1.5 font-medium capitalize">
                           {typeIcon(w.type)}
                           {typeLabel(w.type)}
+                          {w.source === "strava" && (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-orange-100 px-1.5 py-0.5 text-[10px] font-semibold text-orange-600">
+                              <Zap className="h-2.5 w-2.5" />
+                              Strava
+                            </span>
+                          )}
                         </div>
                         <div className="text-slate-500">
                           {w.minutes ? `${w.minutes} min` : ""} {w.rpe ? `· RPE ${w.rpe}/10` : ""}

@@ -37,6 +37,7 @@ export type StravaTokens = {
   expires_at: number;
   athlete_id: number;
   athlete_name: string;
+  last_sync_at?: number; // epoch seconds
 };
 
 export async function exchangeCode(code: string): Promise<StravaTokens> {
@@ -209,4 +210,95 @@ export function stravaActivityToNotes(a: StravaActivity): string {
     parts.push(`${Math.round(a.total_elevation_gain)}m D+`);
   }
   return parts.join(" · ");
+}
+
+export function isRunActivity(stravaType: string): boolean {
+  const t = stravaType.toLowerCase();
+  return t === "run" || t === "trail run" || t === "virtualrun";
+}
+
+// --- Auto-sync ---
+
+const SYNC_COOLDOWN_SECONDS = 3600; // 1 hour
+
+export type AutoSyncResult = {
+  synced: number;
+  skipped: boolean; // true if cooldown not reached
+};
+
+/**
+ * Auto-sync recent run activities from Strava.
+ * Only runs if Strava is connected and cooldown has passed.
+ * Only imports run activities (gym/rest are manual).
+ */
+export async function autoSyncRuns(daysBack = 7): Promise<AutoSyncResult> {
+  // Check if connected
+  const tokens = await loadTokens();
+  if (!tokens) return { synced: 0, skipped: true };
+
+  // Check cooldown
+  const now = Math.floor(Date.now() / 1000);
+  if (tokens.last_sync_at && now - tokens.last_sync_at < SYNC_COOLDOWN_SECONDS) {
+    return { synced: 0, skipped: true };
+  }
+
+  // Get valid token (refresh if needed)
+  let accessToken: string;
+  let currentTokens: StravaTokens;
+  try {
+    const result = await getValidAccessToken();
+    accessToken = result.token;
+    currentTokens = result.tokens;
+  } catch {
+    return { synced: 0, skipped: true };
+  }
+
+  // Fetch activities
+  const afterEpoch = now - daysBack * 86400;
+  let activities: StravaActivity[];
+  try {
+    activities = await fetchActivities(accessToken, afterEpoch);
+  } catch {
+    return { synced: 0, skipped: true };
+  }
+
+  // Filter to runs only
+  const runs = activities.filter((a) => isRunActivity(a.type));
+
+  let synced = 0;
+  for (const a of runs) {
+    const dateStr = a.start_date_local.slice(0, 10);
+    const minutes = Math.round(a.moving_time / 60);
+    const notes = stravaActivityToNotes(a);
+
+    const workout = {
+      date: dateStr,
+      type: "run" as const,
+      minutes,
+      notes,
+      source: "strava" as const,
+    };
+
+    const filePath = `data/workouts/${dateStr}.json`;
+    try {
+      await upsertFile({
+        pathInRepo: filePath,
+        content: JSON.stringify(workout, null, 2),
+        message: `Strava auto-sync: ${a.name} (${dateStr})`,
+      });
+      synced++;
+    } catch {
+      // skip on error
+    }
+  }
+
+  // Update last sync time
+  currentTokens.last_sync_at = now;
+  try {
+    await saveTokens(currentTokens);
+  } catch {
+    // non-critical
+  }
+
+  return { synced, skipped: false };
 }
