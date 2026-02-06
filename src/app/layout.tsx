@@ -31,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <NavLink href="/" label="Semana" />
                 <NavLink href="/history" label="Historial" />
                 <NavLink href="/insights" label="Insights" />
+                <NavLink href="/strava" label="Strava" />
                 <Link
                   href="/log"
                   className="ml-2 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
