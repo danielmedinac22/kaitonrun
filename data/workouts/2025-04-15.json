@@ -1,7 +1,7 @@
 {
   "date": "2025-04-15",
-  "type": "run",
-  "minutes": 42,
-  "notes": "Strava: Afternoon Ride · FC avg 123 bpm · FC max 142 bpm",
+  "type": "gym",
+  "minutes": 22,
+  "notes": "Strava: Evening Weight Training · FC avg 102 bpm · FC max 120 bpm",
   "source": "strava"
 }
