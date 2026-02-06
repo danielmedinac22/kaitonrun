@@ -11,7 +11,7 @@ export default function LogPage({ searchParams }: { searchParams?: Record<string
       <Card>
         <CardHeader>
           <CardTitle>Registrar entrenamiento</CardTitle>
-          <CardDescription>Duración + RPE + notas. (Luego lo hacemos persistente en GitHub.)</CardDescription>
+          <CardDescription>Tipo, duración, RPE y notas de tu sesión.</CardDescription>
         </CardHeader>
         <CardContent>
           <LogForm defaultDate={date} />
