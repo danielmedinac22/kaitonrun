@@ -1,0 +1,74 @@
+{
+  "2026-02-08": {
+    "type": "run",
+    "title": "Carrera larga fácil",
+    "targetMinutes": 70,
+    "rpe": "3-5",
+    "details": [
+      "Carrera continua a ritmo cómodo.",
+      "Mantén una conversación fácil durante la carrera.",
+      "Enfócate en la técnica y la postura."
+    ],
+    "created_at": "2026-02-06T20:30:45.957Z"
+  },
+  "2026-02-10": {
+    "type": "run",
+    "title": "Carrera fácil + técnica",
+    "targetMinutes": 35,
+    "rpe": "3-4",
+    "details": [
+      "Calentamiento suave durante 10 minutos.",
+      "Técnica de carrera: 5 x 1 minuto de ejercicios de técnica (elevaciones de rodillas, talones a glúteos, etc.).",
+      "Enfriamiento suave durante 10 minutos."
+    ],
+    "created_at": "2026-02-06T20:30:45.958Z"
+  },
+  "2026-02-12": {
+    "type": "run",
+    "title": "Intervalos cortos (suave)",
+    "targetMinutes": 45,
+    "rpe": "6",
+    "details": [
+      "Calentamiento suave durante 10 minutos.",
+      "5 x 2 minutos a ritmo moderado, con 1 minuto de descanso entre cada uno.",
+      "Enfriamiento suave durante 10 minutos."
+    ],
+    "created_at": "2026-02-06T20:30:45.958Z"
+  },
+  "2026-02-14": {
+    "type": "run",
+    "title": "Carrera larga fácil",
+    "targetMinutes": 75,
+    "rpe": "3-5",
+    "details": [
+      "Carrera continua a ritmo cómodo.",
+      "Mantén una conversación fácil durante la carrera.",
+      "Enfócate en la técnica y la postura."
+    ],
+    "created_at": "2026-02-06T20:30:45.958Z"
+  },
+  "2026-02-17": {
+    "type": "run",
+    "title": "Carrera fácil + técnica",
+    "targetMinutes": 40,
+    "rpe": "3-4",
+    "details": [
+      "Calentamiento suave durante 10 minutos.",
+      "Técnica de carrera: 5 x 1 minuto de ejercicios de técnica (elevaciones de rodillas, talones a glúteos, etc.).",
+      "Enfriamiento suave durante 10 minutos."
+    ],
+    "created_at": "2026-02-06T20:30:45.958Z"
+  },
+  "2026-02-19": {
+    "type": "run",
+    "title": "Intervalos cortos (suave)",
+    "targetMinutes": 45,
+    "rpe": "6",
+    "details": [
+      "Calentamiento suave durante 10 minutos.",
+      "5 x 2 minutos a ritmo moderado, con 1 minuto de descanso entre cada uno.",
+      "Enfriamiento suave durante 10 minutos."
+    ],
+    "created_at": "2026-02-06T20:30:45.958Z"
+  }
+}
