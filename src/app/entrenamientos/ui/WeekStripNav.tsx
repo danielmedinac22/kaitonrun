@@ -1,6 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 type DayInfo = {
@@ -20,12 +19,12 @@ const TYPE_DOTS: Record<string, string> = {
 
 export default function WeekStripNav({ days }: { days: DayInfo[] }) {
   return (
-    <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+    <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
       {days.map((d) => (
         <div
           key={d.date}
           className={cn(
-            "flex min-w-[3rem] flex-col items-center gap-0.5 rounded-xl px-2 py-2 text-center transition-colors",
+            "flex flex-col items-center rounded-xl py-2.5 text-center transition-colors",
             d.isToday
               ? "bg-primary text-primary-text shadow-sm"
               : d.done
@@ -35,13 +34,16 @@ export default function WeekStripNav({ days }: { days: DayInfo[] }) {
         >
           <span className="text-[10px] font-semibold uppercase">{d.dow}</span>
           <span className="text-sm font-bold">{d.dayNum}</span>
-          <span className={cn(
-            "h-1.5 w-1.5 rounded-full",
-            d.isToday ? "bg-white" : TYPE_DOTS[d.type] ?? "bg-border",
-          )} />
-          {d.done && !d.isToday && (
-            <span className="text-[8px] font-semibold text-success">&#10003;</span>
-          )}
+          <div className="flex h-3 items-center justify-center">
+            {d.done && !d.isToday ? (
+              <span className="text-[8px] font-semibold text-success">&#10003;</span>
+            ) : (
+              <span className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                d.isToday ? "bg-white" : TYPE_DOTS[d.type] ?? "bg-border",
+              )} />
+            )}
+          </div>
         </div>
       ))}
     </div>

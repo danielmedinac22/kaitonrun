@@ -1,4 +1,5 @@
-import { addDays, format, startOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { addDays, format, startOfWeek, startOfMonth, endOfMonth, differenceInCalendarDays, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 
 import { planWithOverrides, planForDate, programMeta } from "@/lib/plan";
 import { readWorkouts, workoutByDate } from "@/lib/workouts";
@@ -51,10 +52,22 @@ export default async function EntrenamientosPage() {
   }).length;
   const weekPct = weekPlanned > 0 ? Math.round((weekDone / weekPlanned) * 100) : 0;
 
-  // Total plan stats
-  const totalDone = workouts.filter((w) => w.type !== "rest").length;
-  const totalPlanned = totalDone + 10; // approximate
-  const totalMinutes = workouts.reduce((acc, w) => acc + (w.minutes ?? 0), 0);
+  // Total plan stats — real count from plan start date
+  const PLAN_START = parseISO(process.env.NEXT_PUBLIC_PLAN_START_DATE || "2026-02-05");
+  const daysSinceStart = Math.max(0, differenceInCalendarDays(today, PLAN_START));
+  let plannedSessions = 0;
+  let plannedMinutes = 0;
+  for (let i = 0; i <= daysSinceStart; i++) {
+    const d = addDays(PLAN_START, i);
+    const plan = planForDate(d);
+    if (plan.type !== "rest") {
+      plannedSessions++;
+      plannedMinutes += plan.targetMinutes ?? 0;
+    }
+  }
+  const startKey = format(PLAN_START, "yyyy-MM-dd");
+  const doneSessions = workouts.filter((w) => w.type !== "rest" && w.date >= startKey).length;
+  const doneMinutes = workouts.filter((w) => w.date >= startKey).reduce((acc, w) => acc + (w.minutes ?? 0), 0);
 
   // Week strip data
   const stripDays = days.map((d) => {
@@ -62,7 +75,7 @@ export default async function EntrenamientosPage() {
     const plan = planWithOverrides(d, overrides);
     return {
       date: key,
-      dow: format(d, "EEE").toUpperCase().slice(0, 3),
+      dow: format(d, "EEEEEE", { locale: es }).toUpperCase(),
       dayNum: format(d, "d"),
       type: plan.type,
       done: byDate.has(key),
@@ -86,7 +99,15 @@ export default async function EntrenamientosPage() {
   }
 
   // Calendar data: current month + next month
-  const calendarDays: { date: string; type: "run" | "gym" | "rest"; done: boolean }[] = [];
+  const calendarDays: {
+    date: string;
+    type: "run" | "gym" | "rest";
+    done: boolean;
+    title: string;
+    targetMinutes?: number;
+    rpe?: string;
+    details: string[];
+  }[] = [];
   const calStart = startOfMonth(today);
   const calEnd = endOfMonth(addDays(calStart, 45)); // ~2 months
   let cursor = calStart;
@@ -97,6 +118,10 @@ export default async function EntrenamientosPage() {
       date: key,
       type: plan.type,
       done: byDate.has(key),
+      title: plan.title,
+      targetMinutes: plan.targetMinutes,
+      rpe: plan.rpe,
+      details: plan.details,
     });
     cursor = addDays(cursor, 1);
   }
@@ -112,9 +137,10 @@ export default async function EntrenamientosPage() {
       <RaceHeroCard phase={phase} weekIndex={weekIndex} goalTime={goalTime} />
 
       <PlanProgressSummary
-        doneCount={totalDone}
-        plannedCount={totalPlanned}
-        doneMinutes={totalMinutes}
+        doneCount={doneSessions}
+        plannedCount={plannedSessions}
+        doneMinutes={doneMinutes}
+        plannedMinutes={plannedMinutes}
         weekPct={weekPct}
       />
 

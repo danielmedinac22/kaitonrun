@@ -11,7 +11,7 @@ import { computeKPIs } from "@/lib/stats";
 
 export const dynamic = "force-dynamic";
 
-const plannedDow = new Set([2, 4, 0]); // Tue Thu Sun
+const plannedDow = new Set([0, 1, 2, 4, 5]); // Sun Mon Tue Thu Fri
 
 function dateKey(d: Date) {
   return format(d, "yyyy-MM-dd");

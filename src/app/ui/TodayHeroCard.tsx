@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { format } from "date-fns";
-import { Clock, Gauge, Activity, Dumbbell, Sparkles, Check } from "lucide-react";
+import { Clock, Gauge, Activity, Dumbbell, Sparkles, Check, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PlanItem, PlanPhase } from "@/lib/plan";
 import type { Workout } from "@/lib/workouts";
@@ -69,23 +69,30 @@ export default function TodayHeroCard({
   return (
     <div className="overflow-hidden rounded-card-xl border border-border bg-surface shadow-card">
       {/* Accent bar on training days */}
-      {!isRest && <div className="h-1 bg-primary" />}
+      {!isRest && (
+        <div className={cn("h-1", isDone ? "bg-success" : "bg-primary")} />
+      )}
 
-      <div className="space-y-4 p-5 sm:p-6">
+      <div className="space-y-3 p-5 sm:p-6">
         {/* Greeting */}
         <p className="text-sm font-medium text-txt-secondary">
           {greeting}, {displayName}
         </p>
 
         {/* Title */}
-        <h2 className="text-xl font-bold leading-tight text-txt-primary">
+        <h2 className="-mt-1 text-[22px] font-bold leading-tight tracking-tight text-txt-primary sm:text-2xl">
           {todayPlan.title}
         </h2>
 
         {/* Date + phase context */}
-        <p className="text-xs text-txt-muted">
-          {format(new Date(), "EEEE d MMM")} &middot; Semana {weekIndex}{" "}
-          &middot; {phase} &middot; {weeksToRace} sem a carrera
+        <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-txt-muted">
+          <span className="capitalize">{format(new Date(), "EEEE d MMM")}</span>
+          <span className="text-border">|</span>
+          <span>Semana {weekIndex}</span>
+          <span className="text-border">|</span>
+          <span>{phase}</span>
+          <span className="text-border">|</span>
+          <span>{weeksToRace} sem a carrera</span>
         </p>
 
         {/* Metadata pills */}
@@ -120,11 +127,47 @@ export default function TodayHeroCard({
           <p className="text-sm text-txt-secondary">{statusMessage}</p>
         )}
 
+        {/* Completed workout summary */}
+        {isDone && todayLogged && (
+          <div className="space-y-2 rounded-card border border-success/20 bg-success-soft p-3">
+            <div className="flex items-center gap-3 text-sm">
+              {todayLogged.minutes != null && (
+                <span className="inline-flex items-center gap-1 text-txt-primary">
+                  <Clock className="h-3.5 w-3.5 text-success" />
+                  {todayLogged.minutes} min
+                  {todayPlan.targetMinutes != null && (
+                    <span className="text-txt-muted">
+                      / {todayPlan.targetMinutes}
+                    </span>
+                  )}
+                </span>
+              )}
+              {todayLogged.rpe != null && (
+                <span className="inline-flex items-center gap-1 text-txt-primary">
+                  <Gauge className="h-3.5 w-3.5 text-success" />
+                  RPE {todayLogged.rpe}/10
+                </span>
+              )}
+              {todayLogged.source === "strava" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#FC4C02]/10 px-2 py-0.5 text-xs font-medium text-[#FC4C02]">
+                  <Zap className="h-3 w-3" />
+                  Strava
+                </span>
+              )}
+            </div>
+            {todayLogged.notes && (
+              <p className="line-clamp-2 text-xs text-txt-secondary">
+                {todayLogged.notes}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Coach note */}
         {todayPlan.coachNote && (
           <div className="flex items-start gap-2 text-sm italic text-secondary">
             <Sparkles className="mt-0.5 h-4 w-4 shrink-0" />
-            <span className="line-clamp-2">{todayPlan.coachNote}</span>
+            <span>{todayPlan.coachNote}</span>
           </div>
         )}
 
@@ -143,10 +186,10 @@ export default function TodayHeroCard({
           {isDone ? (
             <Link
               href="/entrenamientos"
-              className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-card-lg bg-success-soft text-base font-semibold text-success transition-all"
+              className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-card-lg border border-success/30 text-base font-semibold text-success transition-all hover:bg-success-soft"
             >
               <Check className="h-5 w-5" />
-              Completado
+              Ver plan
             </Link>
           ) : isRest ? (
             <Link

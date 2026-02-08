@@ -4,11 +4,13 @@ export default function PlanProgressSummary({
   doneCount,
   plannedCount,
   doneMinutes,
+  plannedMinutes,
   weekPct,
 }: {
   doneCount: number;
   plannedCount: number;
   doneMinutes: number;
+  plannedMinutes: number;
   weekPct: number;
 }) {
   return (
@@ -25,7 +27,7 @@ export default function PlanProgressSummary({
         <Clock className="h-4 w-4 shrink-0 text-primary" />
         <div className="min-w-0">
           <div className="text-xs text-primary/70">Minutos</div>
-          <div className="text-sm font-bold text-primary">{doneMinutes}</div>
+          <div className="text-sm font-bold text-primary">{doneMinutes}/{plannedMinutes}</div>
         </div>
       </div>
 
