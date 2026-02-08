@@ -106,17 +106,17 @@ export default function CoachChat() {
   const isEmptyChat = messages.length === 0;
 
   return (
-    <div className="flex flex-col rounded-xl border border-purple-100 bg-gradient-to-b from-white to-purple-50/30 shadow-sm">
+    <div className="flex flex-col rounded-xl border border-secondary/20 bg-gradient-to-b from-surface to-secondary-soft/30 shadow-sm">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-purple-100 px-4 py-3">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
+      <div className="flex items-center gap-2 border-b border-secondary/20 px-4 py-3">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-soft text-secondary">
           <Brain className="h-4.5 w-4.5" />
         </span>
         <div className="flex-1">
-          <div className="text-sm font-semibold text-slate-900">KaitonCoach</div>
-          <div className="text-[11px] text-slate-400">Entrenador personal con IA &middot; GPT-4o</div>
+          <div className="text-sm font-semibold text-txt-primary">KaitonCoach</div>
+          <div className="text-[11px] text-txt-muted">Entrenador personal con IA &middot; GPT-5.2</div>
         </div>
-        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
+        <span className="rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-semibold text-success">
           Online
         </span>
       </div>
@@ -125,16 +125,16 @@ export default function CoachChat() {
       <div className="flex-1 overflow-y-auto px-4 py-4" style={{ maxHeight: "28rem", minHeight: "10rem" }}>
         {isEmptyChat && (
           <div className="space-y-4">
-            <div className="rounded-lg bg-purple-50 p-3 text-sm text-purple-800">
+            <div className="rounded-lg bg-secondary-soft p-3 text-sm text-secondary">
               <p className="font-medium">Hola, soy tu coach. Puedo:</p>
-              <ul className="mt-1.5 space-y-1 text-purple-700">
+              <ul className="mt-1.5 space-y-1 text-secondary">
                 <li>• Planificar y <strong>modificar</strong> tus entrenamientos</li>
                 <li>• Calcular y <strong>guardar</strong> tus zonas de FC y ritmo</li>
                 <li>• Analizar tu rendimiento y detectar sobreentrenamiento</li>
                 <li>• Estimar tus tiempos de carrera (5K, 10K, media)</li>
                 <li>• Ajustar el plan según cómo te sientes</li>
               </ul>
-              <p className="mt-2 text-xs text-purple-500">Pregúntame lo que quieras o usa las acciones rápidas.</p>
+              <p className="mt-2 text-xs text-secondary/70">Pregúntame lo que quieras o usa las acciones rápidas.</p>
             </div>
 
             {/* Quick actions */}
@@ -144,7 +144,7 @@ export default function CoachChat() {
                   key={a.id}
                   onClick={() => sendMessage(a.prompt)}
                   disabled={loading}
-                  className="rounded-lg border border-purple-200 bg-white px-2.5 py-1.5 text-xs font-medium text-purple-700 transition-all hover:border-purple-300 hover:bg-purple-50 active:scale-95 disabled:opacity-50"
+                  className="rounded-lg border border-secondary/30 bg-surface px-2.5 py-1.5 text-xs font-medium text-secondary transition-all hover:border-secondary/50 hover:bg-secondary-soft active:scale-95 disabled:opacity-50"
                 >
                   <Sparkles className="mr-1 inline h-3 w-3" />
                   {a.label}
@@ -162,23 +162,23 @@ export default function CoachChat() {
             <div
               className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
                 m.role === "user"
-                  ? "rounded-br-md bg-indigo-600 text-white"
-                  : "rounded-bl-md border border-purple-100 bg-white text-slate-700"
+                  ? "rounded-br-md bg-primary text-primary-text"
+                  : "rounded-bl-md border border-secondary/20 bg-surface text-txt-primary"
               }`}
             >
               {m.role === "assistant" ? (
-                <div className="prose prose-sm prose-slate max-w-none [&_strong]:text-slate-900">
+                <div className="prose prose-sm max-w-none [&_strong]:text-txt-primary">
                   {formatMessage(m.content)}
                 </div>
               ) : (
                 <div>{m.content}</div>
               )}
               {m.toolsUsed && m.toolsUsed.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1 border-t border-purple-50 pt-1.5">
+                <div className="mt-2 flex flex-wrap gap-1 border-t border-secondary/10 pt-1.5">
                   {[...new Set(m.toolsUsed)].map((t) => (
                     <span
                       key={t}
-                      className="inline-flex items-center gap-0.5 rounded-full bg-purple-50 px-1.5 py-0.5 text-[10px] font-medium text-purple-600"
+                      className="inline-flex items-center gap-0.5 rounded-full bg-secondary-soft px-1.5 py-0.5 text-[10px] font-medium text-secondary"
                     >
                       <Wrench className="h-2.5 w-2.5" />
                       {TOOL_LABELS[t] || t}
@@ -192,7 +192,7 @@ export default function CoachChat() {
 
         {loading && (
           <div className="mb-3 flex justify-start">
-            <div className="flex items-center gap-2 rounded-2xl rounded-bl-md border border-purple-100 bg-white px-3.5 py-2.5 text-sm text-purple-600">
+            <div className="flex items-center gap-2 rounded-2xl rounded-bl-md border border-secondary/20 bg-surface px-3.5 py-2.5 text-sm text-secondary">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Pensando...</span>
             </div>
@@ -204,13 +204,13 @@ export default function CoachChat() {
 
       {/* Quick actions after conversation started */}
       {!isEmptyChat && !loading && (
-        <div className="flex flex-wrap gap-1 border-t border-purple-50 px-4 py-2">
+        <div className="flex flex-wrap gap-1 border-t border-secondary/10 px-4 py-2">
           {QUICK_ACTIONS.slice(0, 4).map((a) => (
             <button
               key={a.id}
               onClick={() => sendMessage(a.prompt)}
               disabled={loading}
-              className="rounded-md border border-purple-100 bg-white px-2 py-1 text-[10px] font-medium text-purple-600 transition-all hover:bg-purple-50 active:scale-95 disabled:opacity-50"
+              className="rounded-md border border-secondary/20 bg-surface px-2 py-1 text-[10px] font-medium text-secondary transition-all hover:bg-secondary-soft active:scale-95 disabled:opacity-50"
             >
               {a.label}
             </button>
@@ -219,7 +219,7 @@ export default function CoachChat() {
       )}
 
       {/* Input */}
-      <div className="border-t border-purple-100 p-3">
+      <div className="border-t border-secondary/20 p-3">
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}
@@ -228,7 +228,7 @@ export default function CoachChat() {
             onKeyDown={handleKeyDown}
             placeholder="Habla con tu coach..."
             rows={1}
-            className="flex-1 resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="flex-1 resize-none rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-txt-primary placeholder:text-txt-muted focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
             style={{ minHeight: "2.5rem", maxHeight: "6rem" }}
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement;
@@ -240,7 +240,7 @@ export default function CoachChat() {
             onClick={() => sendMessage(input)}
             disabled={loading || !input.trim()}
             size="icon"
-            className="h-10 w-10 shrink-0 rounded-xl bg-purple-600 hover:bg-purple-700"
+            className="h-10 w-10 shrink-0 rounded-xl bg-secondary text-surface hover:opacity-90"
           >
             <Send className="h-4 w-4" />
           </Button>

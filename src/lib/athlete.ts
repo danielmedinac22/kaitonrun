@@ -1,6 +1,6 @@
-import { getFileContent, upsertFile } from "@/lib/github";
+import { supabase } from "@/lib/supabase";
 
-// --- Athlete Profile (persisted in GitHub) ---
+// --- Athlete Profile (persisted in Supabase) ---
 
 export type HRZone = { min: number; max: number };
 
@@ -46,28 +46,50 @@ export type AthleteProfile = {
   updated_at: string;
 };
 
-const PROFILE_PATH = "data/athlete-profile.json";
-
 export async function loadProfile(): Promise<AthleteProfile | null> {
-  const txt = await getFileContent(PROFILE_PATH);
-  if (!txt) return null;
-  try {
-    return JSON.parse(txt);
-  } catch {
-    return null;
+  const { data, error } = await supabase()
+    .from("athlete_profile")
+    .select("*")
+    .eq("id", 1)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null; // no rows
+    throw new Error(`loadProfile failed: ${error.message}`);
   }
+
+  return {
+    name: data.name ?? undefined,
+    age: data.age ?? undefined,
+    zones: data.zones ?? undefined,
+    goals: data.goals ?? undefined,
+    coach_notes: data.coach_notes ?? undefined,
+    updated_at: data.updated_at,
+  };
 }
 
 export async function saveProfile(profile: AthleteProfile): Promise<void> {
   profile.updated_at = new Date().toISOString();
-  await upsertFile({
-    pathInRepo: PROFILE_PATH,
-    content: JSON.stringify(profile, null, 2),
-    message: "Update athlete profile",
-  });
+
+  const { error } = await supabase()
+    .from("athlete_profile")
+    .upsert(
+      {
+        id: 1,
+        name: profile.name ?? null,
+        age: profile.age ?? null,
+        zones: profile.zones ?? null,
+        goals: profile.goals ?? null,
+        coach_notes: profile.coach_notes ?? null,
+        updated_at: profile.updated_at,
+      },
+      { onConflict: "id" },
+    );
+
+  if (error) throw new Error(`saveProfile failed: ${error.message}`);
 }
 
-// --- Plan Overrides (persisted in GitHub) ---
+// --- Plan Overrides (persisted in Supabase) ---
 
 export type PlanOverride = {
   type: "run" | "gym" | "rest";
@@ -81,22 +103,45 @@ export type PlanOverride = {
 
 export type PlanOverrides = Record<string, PlanOverride>; // key = YYYY-MM-DD
 
-const OVERRIDES_PATH = "data/plan-overrides.json";
-
 export async function loadOverrides(): Promise<PlanOverrides> {
-  const txt = await getFileContent(OVERRIDES_PATH);
-  if (!txt) return {};
-  try {
-    return JSON.parse(txt);
-  } catch {
-    return {};
+  const { data, error } = await supabase()
+    .from("plan_overrides")
+    .select("*");
+
+  if (error) throw new Error(`loadOverrides failed: ${error.message}`);
+
+  const result: PlanOverrides = {};
+  for (const row of data ?? []) {
+    result[row.date] = {
+      type: row.type,
+      title: row.title,
+      targetMinutes: row.target_minutes ?? undefined,
+      rpe: row.rpe ?? undefined,
+      details: row.details ?? [],
+      coachNote: row.coach_note ?? undefined,
+      created_at: row.created_at,
+    };
   }
+  return result;
 }
 
 export async function saveOverrides(overrides: PlanOverrides): Promise<void> {
-  await upsertFile({
-    pathInRepo: OVERRIDES_PATH,
-    content: JSON.stringify(overrides, null, 2),
-    message: "Update plan overrides",
-  });
+  const rows = Object.entries(overrides).map(([date, o]) => ({
+    date,
+    type: o.type,
+    title: o.title,
+    target_minutes: o.targetMinutes ?? null,
+    rpe: o.rpe ?? null,
+    details: o.details ?? [],
+    coach_note: o.coachNote ?? null,
+    created_at: o.created_at,
+  }));
+
+  if (rows.length === 0) return;
+
+  const { error } = await supabase()
+    .from("plan_overrides")
+    .upsert(rows, { onConflict: "date" });
+
+  if (error) throw new Error(`saveOverrides failed: ${error.message}`);
 }

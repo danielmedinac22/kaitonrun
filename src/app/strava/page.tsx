@@ -17,17 +17,17 @@ export default async function StravaPage({
     return (
       <main className="space-y-5">
         {justConnected && (
-          <Card className="border-emerald-200 bg-emerald-50">
+          <Card className="border-success/30 bg-success-soft">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <Badge variant="done">Conectado</Badge>
-                <div className="text-sm text-emerald-800">
+                <div className="text-sm text-success">
                   Strava conectado correctamente. Ya puedes sincronizar tus actividades.
                 </div>
               </div>
               <a
-                href="/settings"
-                className="mt-3 inline-block text-sm font-medium text-indigo-600 hover:underline"
+                href="/ajustes"
+                className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
               >
                 Ir a Ajustes
               </a>
@@ -36,12 +36,12 @@ export default async function StravaPage({
         )}
 
         {error && (
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-danger/30 bg-danger/10">
             <CardContent className="p-4">
-              <div className="text-sm text-red-800">Error: {error}</div>
+              <div className="text-sm text-danger">Error: {error}</div>
               <a
-                href="/settings"
-                className="mt-3 inline-block text-sm font-medium text-indigo-600 hover:underline"
+                href="/ajustes"
+                className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
               >
                 Ir a Ajustes
               </a>
@@ -53,5 +53,5 @@ export default async function StravaPage({
   }
 
   // Otherwise redirect to settings
-  redirect("/settings");
+  redirect("/ajustes");
 }

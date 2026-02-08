@@ -1,4 +1,5 @@
-import { getFileContent, upsertFile } from "@/lib/github";
+import { supabase } from "@/lib/supabase";
+import { upsertWorkout } from "@/lib/workouts";
 
 // --- Config ---
 
@@ -90,26 +91,47 @@ async function refreshTokens(refreshToken: string): Promise<StravaTokens> {
   };
 }
 
-// --- Token Persistence (GitHub) ---
-
-const TOKENS_PATH = "data/strava-tokens.json";
+// --- Token Persistence (Supabase) ---
 
 export async function loadTokens(): Promise<StravaTokens | null> {
-  const txt = await getFileContent(TOKENS_PATH);
-  if (!txt) return null;
-  try {
-    return JSON.parse(txt);
-  } catch {
-    return null;
+  const { data, error } = await supabase()
+    .from("strava_tokens")
+    .select("*")
+    .eq("id", 1)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null; // no rows
+    throw new Error(`loadTokens failed: ${error.message}`);
   }
+
+  return {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    expires_at: data.expires_at,
+    athlete_id: data.athlete_id,
+    athlete_name: data.athlete_name,
+    last_sync_at: data.last_sync_at ?? undefined,
+  };
 }
 
 export async function saveTokens(tokens: StravaTokens): Promise<void> {
-  await upsertFile({
-    pathInRepo: TOKENS_PATH,
-    content: JSON.stringify(tokens, null, 2),
-    message: "Update Strava tokens",
-  });
+  const { error } = await supabase()
+    .from("strava_tokens")
+    .upsert(
+      {
+        id: 1,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_at: tokens.expires_at,
+        athlete_id: tokens.athlete_id,
+        athlete_name: tokens.athlete_name,
+        last_sync_at: tokens.last_sync_at ?? null,
+      },
+      { onConflict: "id" },
+    );
+
+  if (error) throw new Error(`saveTokens failed: ${error.message}`);
 }
 
 export async function getValidAccessToken(): Promise<{ token: string; tokens: StravaTokens }> {
@@ -316,13 +338,8 @@ export async function autoSyncRuns(daysBack = 7): Promise<AutoSyncResult> {
       source: "strava" as const,
     };
 
-    const filePath = `data/workouts/${dateStr}.json`;
     try {
-      await upsertFile({
-        pathInRepo: filePath,
-        content: JSON.stringify(workout, null, 2),
-        message: `Strava auto-sync: ${a.name} (${dateStr})`,
-      });
+      await upsertWorkout(workout);
       synced++;
     } catch {
       // skip on error

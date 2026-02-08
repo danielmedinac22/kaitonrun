@@ -60,7 +60,7 @@ export default function SyncButton() {
         </Button>
       </div>
       {result && !loading && (
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-txt-secondary">
           {result.synced > 0
             ? `${result.synced} actividad${result.synced > 1 ? "es" : ""} sincronizada${result.synced > 1 ? "s" : ""} (${result.total} encontrada${result.total > 1 ? "s" : ""} en Strava)`
             : "Todo al día"}

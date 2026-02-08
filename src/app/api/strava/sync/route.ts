@@ -7,7 +7,7 @@ import {
   isRunActivity,
   saveTokens,
 } from "@/lib/strava";
-import { upsertFile } from "@/lib/github";
+import { upsertWorkout } from "@/lib/workouts";
 import type { Workout } from "@/lib/workouts";
 
 export async function POST(req: NextRequest) {
@@ -44,14 +44,8 @@ export async function POST(req: NextRequest) {
         source: "strava",
       };
 
-      const filePath = `data/workouts/${dateStr}.json`;
-
       try {
-        await upsertFile({
-          pathInRepo: filePath,
-          content: JSON.stringify(workout, null, 2),
-          message: `Sync from Strava: ${a.name} (${dateStr})`,
-        });
+        await upsertWorkout(workout);
         synced++;
       } catch {
         skipped++;

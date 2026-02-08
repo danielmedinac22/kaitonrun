@@ -8,23 +8,42 @@ export type Workout = {
   source?: "strava" | "manual";
 };
 
-import { getFileContent, listRepoDir } from "@/lib/github";
+import { supabase } from "@/lib/supabase";
 
 export async function readWorkouts(): Promise<Workout[]> {
-  const files = await listRepoDir("data/workouts");
-  const jsonFiles = files
-    .filter((f) => f.name.endsWith(".json"))
-    .sort((a, b) => (a.name < b.name ? 1 : -1));
+  const { data, error } = await supabase()
+    .from("workouts")
+    .select("*")
+    .order("date", { ascending: false });
 
-  const out: Workout[] = [];
-  for (const f of jsonFiles.slice(0, 200)) {
-    const txt = await getFileContent(f.path);
-    if (!txt) continue;
-    try {
-      out.push(JSON.parse(txt));
-    } catch {}
-  }
-  return out;
+  if (error) throw new Error(`readWorkouts failed: ${error.message}`);
+
+  return (data ?? []).map((row) => ({
+    date: row.date,
+    type: row.type,
+    minutes: row.minutes ?? undefined,
+    rpe: row.rpe ?? undefined,
+    notes: row.notes ?? undefined,
+    source: row.source ?? undefined,
+  }));
+}
+
+export async function upsertWorkout(workout: Workout): Promise<void> {
+  const { error } = await supabase()
+    .from("workouts")
+    .upsert(
+      {
+        date: workout.date,
+        type: workout.type,
+        minutes: workout.minutes ?? null,
+        rpe: workout.rpe ?? null,
+        notes: workout.notes ?? null,
+        source: workout.source ?? null,
+      },
+      { onConflict: "date" },
+    );
+
+  if (error) throw new Error(`upsertWorkout failed: ${error.message}`);
 }
 
 export function workoutByDate(workouts: Workout[]) {
