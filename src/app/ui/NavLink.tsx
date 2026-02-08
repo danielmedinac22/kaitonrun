@@ -20,10 +20,10 @@ export function NavLink({
     <Link
       href={href}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        "inline-flex items-center gap-1.5 rounded-card px-3 py-2 text-sm font-medium transition-colors",
         isActive
-          ? "bg-indigo-50 text-indigo-700"
-          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+          ? "bg-primary-soft text-primary"
+          : "text-txt-secondary hover:bg-surface-elevated hover:text-txt-primary",
       )}
     >
       {icon}
@@ -41,7 +41,7 @@ export function MobileNavLink({
   href: string;
   label: string;
   icon: React.ReactNode;
-  variant?: "default" | "primary";
+  variant?: "default" | "primary" | "accent";
 }) {
   const pathname = usePathname();
   const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -54,18 +54,48 @@ export function MobileNavLink({
       >
         <span
           className={cn(
-            "flex h-11 w-11 items-center justify-center rounded-2xl shadow-lg transition-all",
+            "flex h-11 w-11 items-center justify-center rounded-2xl shadow-card transition-all",
             isActive
-              ? "bg-indigo-700 text-white shadow-indigo-200 scale-105"
-              : "bg-indigo-600 text-white shadow-indigo-100 active:scale-95"
+              ? "bg-primary-hover text-primary-text scale-105"
+              : "bg-primary text-primary-text active:scale-95",
           )}
         >
           {icon}
         </span>
-        <span className={cn(
-          "text-[10px] font-semibold",
-          isActive ? "text-indigo-700" : "text-indigo-600"
-        )}>
+        <span
+          className={cn(
+            "text-[10px] font-semibold",
+            isActive ? "text-primary-hover" : "text-primary",
+          )}
+        >
+          {label}
+        </span>
+      </Link>
+    );
+  }
+
+  if (variant === "accent") {
+    return (
+      <Link
+        href={href}
+        className="flex flex-col items-center justify-center gap-0.5"
+      >
+        <span
+          className={cn(
+            "flex h-11 w-11 items-center justify-center rounded-2xl shadow-card transition-all",
+            isActive
+              ? "bg-secondary-hover text-surface scale-105"
+              : "bg-secondary text-surface active:scale-95",
+          )}
+        >
+          {icon}
+        </span>
+        <span
+          className={cn(
+            "text-[10px] font-semibold",
+            isActive ? "text-secondary-hover" : "text-secondary",
+          )}
+        >
           {label}
         </span>
       </Link>
@@ -77,16 +107,18 @@ export function MobileNavLink({
       href={href}
       className={cn(
         "relative flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 text-[10px] font-medium transition-colors",
-        isActive ? "text-indigo-600" : "text-slate-400"
+        isActive ? "text-primary" : "text-txt-muted",
       )}
     >
       {isActive && (
-        <span className="absolute -top-1.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-indigo-600" />
+        <span className="absolute -top-1.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-primary" />
       )}
-      <span className={cn(
-        "flex h-6 w-6 items-center justify-center transition-colors",
-        isActive ? "text-indigo-600" : "text-slate-400"
-      )}>
+      <span
+        className={cn(
+          "flex h-6 w-6 items-center justify-center transition-colors",
+          isActive ? "text-primary" : "text-txt-muted",
+        )}
+      >
         {icon}
       </span>
       {label}

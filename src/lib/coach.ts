@@ -22,7 +22,7 @@ function getClient(): OpenAI {
   return new OpenAI({ apiKey });
 }
 
-const MODEL = "o3-mini";
+const MODEL = "gpt-5.2";
 
 // --- System prompt ---
 
@@ -559,12 +559,14 @@ export async function chat(
   while (iterations < MAX_ITERATIONS) {
     iterations++;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await client.chat.completions.create({
       model: MODEL,
-      max_completion_tokens: 3000,
+      max_completion_tokens: 4000,
+      reasoning_effort: "medium",
       messages: openaiMessages,
       tools: TOOLS,
-    });
+    } as any);
 
     const choice = response.choices[0];
     const message = choice.message;

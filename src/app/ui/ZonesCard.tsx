@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Heart } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Heart, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 type Zones = {
@@ -39,11 +39,11 @@ type Profile = {
 };
 
 const ZONE_COLORS = [
-  "bg-blue-100 text-blue-700 border-blue-200",
-  "bg-green-100 text-green-700 border-green-200",
-  "bg-yellow-100 text-yellow-700 border-yellow-200",
-  "bg-orange-100 text-orange-700 border-orange-200",
-  "bg-red-100 text-red-700 border-red-200",
+  "bg-info-soft text-info border-info/30",
+  "bg-success-soft text-success border-success/30",
+  "bg-warning-soft text-warning border-warning/30",
+  "bg-primary-soft text-primary border-primary/30",
+  "bg-danger/10 text-danger border-danger/30",
 ];
 
 const ZONE_LABELS = ["Z1 Recuperación", "Z2 Aeróbico", "Z3 Tempo", "Z4 Umbral", "Z5 VO2max"];
@@ -52,7 +52,8 @@ export default function ZonesCard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchProfile = useCallback(() => {
+    setLoading(true);
     fetch("/api/profile")
       .then((r) => r.json())
       .then((data) => {
@@ -62,13 +63,37 @@ export default function ZonesCard() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  // Listen for custom event from coach when zones are updated
+  useEffect(() => {
+    function onZonesUpdated() {
+      fetchProfile();
+    }
+    window.addEventListener("zones-updated", onZonesUpdated);
+    return () => window.removeEventListener("zones-updated", onZonesUpdated);
+  }, [fetchProfile]);
+
+  // Also refetch when tab becomes visible (user might have used coach in another tab)
+  useEffect(() => {
+    function onVisibility() {
+      if (document.visibilityState === "visible") {
+        fetchProfile();
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [fetchProfile]);
+
   const zones = profile?.zones;
 
   return (
-    <Card className="border-rose-100">
+    <Card className="border-danger/20">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-100 text-rose-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-danger/10 text-danger">
             <Heart className="h-5 w-5" />
           </div>
           <div className="flex-1">
@@ -79,20 +104,29 @@ export default function ZonesCard() {
                 : "Pídele al coach que calcule tus zonas."}
             </CardDescription>
           </div>
+          {zones && (
+            <button
+              onClick={fetchProfile}
+              className="rounded-lg p-2 text-txt-muted transition-colors hover:bg-surface-elevated hover:text-txt-secondary"
+              title="Actualizar zonas"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            </button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
-        {loading && <p className="text-sm text-slate-400">Cargando...</p>}
+        {loading && !profile && <p className="text-sm text-txt-muted">Cargando...</p>}
 
         {!loading && !zones && (
-          <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
+          <div className="rounded-lg bg-danger/10 p-3 text-sm text-danger">
             No hay zonas calculadas aún. Abre el coach y dile{" "}
             <span className="font-semibold">&quot;Calcula mis zonas&quot;</span> para que las calcule
             basándose en tus datos de Strava.
           </div>
         )}
 
-        {!loading && zones && (
+        {zones && (
           <div className="space-y-4">
             {/* HR Zones */}
             <div className="grid gap-1.5">
@@ -105,14 +139,14 @@ export default function ZonesCard() {
                       {ZONE_LABELS[i]}
                     </span>
                     <div className="flex-1">
-                      <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-3 overflow-hidden rounded-full bg-surface-elevated">
                         <div
                           className={`h-full rounded-full transition-all ${ZONE_COLORS[i].split(" ")[0]}`}
                           style={{ width: `${Math.min(100, pct)}%` }}
                         />
                       </div>
                     </div>
-                    <span className="w-24 text-right text-xs font-medium text-slate-600">
+                    <span className="w-24 text-right text-xs font-medium text-txt-secondary">
                       {zone.min}–{zone.max} bpm
                     </span>
                   </div>
@@ -122,25 +156,25 @@ export default function ZonesCard() {
 
             {/* Thresholds */}
             <div className="grid grid-cols-2 gap-2">
-              <div className="rounded-lg border border-slate-100 bg-slate-50/50 p-2.5">
-                <div className="text-[10px] font-medium text-slate-400">Umbral aeróbico</div>
-                <div className="text-lg font-bold text-slate-900">{zones.aerobic_threshold_hr} <span className="text-xs font-normal text-slate-500">bpm</span></div>
+              <div className="rounded-lg border border-border bg-surface-elevated p-2.5">
+                <div className="text-[10px] font-medium text-txt-muted">Umbral aeróbico</div>
+                <div className="text-lg font-bold text-txt-primary">{zones.aerobic_threshold_hr} <span className="text-xs font-normal text-txt-secondary">bpm</span></div>
               </div>
-              <div className="rounded-lg border border-slate-100 bg-slate-50/50 p-2.5">
-                <div className="text-[10px] font-medium text-slate-400">Umbral de lactato</div>
-                <div className="text-lg font-bold text-slate-900">{zones.lactate_threshold_hr} <span className="text-xs font-normal text-slate-500">bpm</span></div>
+              <div className="rounded-lg border border-border bg-surface-elevated p-2.5">
+                <div className="text-[10px] font-medium text-txt-muted">Umbral de lactato</div>
+                <div className="text-lg font-bold text-txt-primary">{zones.lactate_threshold_hr} <span className="text-xs font-normal text-txt-secondary">bpm</span></div>
               </div>
             </div>
 
             {/* Pace zones */}
             {zones.pace_zones && (
               <div className="space-y-1.5">
-                <div className="text-xs font-semibold text-slate-500">Zonas de ritmo</div>
+                <div className="text-xs font-semibold text-txt-secondary">Zonas de ritmo</div>
                 <div className="grid grid-cols-2 gap-1.5">
                   {(["easy", "tempo", "threshold", "interval"] as const).map((p) => (
-                    <div key={p} className="rounded-md border border-slate-100 bg-white px-2 py-1.5 text-xs">
-                      <span className="font-medium capitalize text-slate-600">{p === "easy" ? "Fácil" : p === "tempo" ? "Tempo" : p === "threshold" ? "Umbral" : "Intervalo"}</span>
-                      <span className="ml-1 text-slate-900">{zones.pace_zones![p]} min/km</span>
+                    <div key={p} className="rounded-md border border-border bg-surface px-2 py-1.5 text-xs">
+                      <span className="font-medium capitalize text-txt-secondary">{p === "easy" ? "Fácil" : p === "tempo" ? "Tempo" : p === "threshold" ? "Umbral" : "Intervalo"}</span>
+                      <span className="ml-1 text-txt-primary">{zones.pace_zones![p]} min/km</span>
                     </div>
                   ))}
                 </div>
@@ -150,24 +184,24 @@ export default function ZonesCard() {
             {/* Goals */}
             {profile?.goals && (
               <div className="space-y-1.5">
-                <div className="text-xs font-semibold text-slate-500">Objetivos</div>
+                <div className="text-xs font-semibold text-txt-secondary">Objetivos</div>
                 <div className="grid grid-cols-2 gap-1.5">
                   {profile.goals.target_time && (
-                    <div className="rounded-md border border-indigo-100 bg-indigo-50/50 px-2 py-1.5 text-xs">
-                      <span className="font-medium text-indigo-600">Media maratón</span>
-                      <span className="ml-1 font-bold text-indigo-900">{profile.goals.target_time}</span>
+                    <div className="rounded-md border border-primary/20 bg-primary-soft px-2 py-1.5 text-xs">
+                      <span className="font-medium text-primary">Media maratón</span>
+                      <span className="ml-1 font-bold text-txt-primary">{profile.goals.target_time}</span>
                     </div>
                   )}
                   {profile.goals.five_k_target && (
-                    <div className="rounded-md border border-indigo-100 bg-indigo-50/50 px-2 py-1.5 text-xs">
-                      <span className="font-medium text-indigo-600">5K</span>
-                      <span className="ml-1 font-bold text-indigo-900">{profile.goals.five_k_target}</span>
+                    <div className="rounded-md border border-primary/20 bg-primary-soft px-2 py-1.5 text-xs">
+                      <span className="font-medium text-primary">5K</span>
+                      <span className="ml-1 font-bold text-txt-primary">{profile.goals.five_k_target}</span>
                     </div>
                   )}
                   {profile.goals.ten_k_target && (
-                    <div className="rounded-md border border-indigo-100 bg-indigo-50/50 px-2 py-1.5 text-xs">
-                      <span className="font-medium text-indigo-600">10K</span>
-                      <span className="ml-1 font-bold text-indigo-900">{profile.goals.ten_k_target}</span>
+                    <div className="rounded-md border border-primary/20 bg-primary-soft px-2 py-1.5 text-xs">
+                      <span className="font-medium text-primary">10K</span>
+                      <span className="ml-1 font-bold text-txt-primary">{profile.goals.ten_k_target}</span>
                     </div>
                   )}
                 </div>

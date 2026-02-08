@@ -47,7 +47,7 @@ export default function LogForm({ defaultDate }: { defaultDate?: string }) {
     <form onSubmit={onSubmit} className="space-y-5">
       {/* Type selection */}
       <div className="space-y-2">
-        <span className="text-sm font-medium text-slate-700">Tipo de entrenamiento</span>
+        <span className="text-sm font-medium text-txt-primary">Tipo de entrenamiento</span>
         <div className="grid grid-cols-3 gap-2">
           {typeOptions.map((opt) => (
             <button
@@ -57,8 +57,8 @@ export default function LogForm({ defaultDate }: { defaultDate?: string }) {
               className={
                 "flex items-center justify-center gap-2 rounded-lg border px-3 py-3 text-sm font-medium transition-all " +
                 (selectedType === opt.key
-                  ? "border-indigo-300 bg-indigo-50 text-indigo-700 shadow-sm"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50")
+                  ? "border-primary/40 bg-primary-soft text-primary shadow-sm"
+                  : "border-border bg-surface text-txt-secondary hover:border-border hover:bg-surface-elevated")
               }
             >
               {opt.icon}
@@ -70,35 +70,35 @@ export default function LogForm({ defaultDate }: { defaultDate?: string }) {
 
       <div className="grid gap-4 md:grid-cols-3">
         <label className="grid gap-1.5 text-sm">
-          <span className="font-medium text-slate-700">Fecha</span>
+          <span className="font-medium text-txt-primary">Fecha</span>
           <input
             name="date"
             type="date"
             defaultValue={defaultDate || today}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 transition-colors"
+            className="h-10 rounded-lg border border-border bg-surface px-3 py-2 text-txt-primary transition-colors"
           />
         </label>
 
         <label className="grid gap-1.5 text-sm">
-          <span className="font-medium text-slate-700">Duración (min)</span>
+          <span className="font-medium text-txt-primary">Duración (min)</span>
           <input
             name="minutes"
             type="number"
             min={0}
             placeholder="45"
-            className="h-10 rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 transition-colors"
+            className="h-10 rounded-lg border border-border bg-surface px-3 py-2 text-txt-primary transition-colors"
           />
         </label>
 
         <label className="grid gap-1.5 text-sm">
-          <span className="font-medium text-slate-700">RPE (1–10)</span>
+          <span className="font-medium text-txt-primary">RPE (1–10)</span>
           <input
             name="rpe"
             type="number"
             min={1}
             max={10}
             placeholder="6"
-            className="h-10 rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 transition-colors"
+            className="h-10 rounded-lg border border-border bg-surface px-3 py-2 text-txt-primary transition-colors"
           />
         </label>
       </div>
@@ -109,7 +109,7 @@ export default function LogForm({ defaultDate }: { defaultDate?: string }) {
           name="notes"
           rows={4}
           placeholder="Sensaciones, molestias, energía, clima, etc."
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-slate-900 transition-colors"
+          className="rounded-lg border border-border bg-surface px-3 py-2.5 text-txt-primary transition-colors"
         />
       </label>
 
@@ -126,14 +126,14 @@ export default function LogForm({ defaultDate }: { defaultDate?: string }) {
         </Button>
 
         {status === "success" && (
-          <div className="animate-fade-in flex items-center gap-1.5 text-sm font-medium text-emerald-600">
+          <div className="animate-fade-in flex items-center gap-1.5 text-sm font-medium text-success">
             <Check className="h-4 w-4" />
             Guardado correctamente
           </div>
         )}
 
         {status === "error" && (
-          <div className="animate-fade-in flex items-center gap-1.5 text-sm font-medium text-red-600">
+          <div className="animate-fade-in flex items-center gap-1.5 text-sm font-medium text-danger">
             <AlertCircle className="h-4 w-4" />
             {errorMsg}
           </div>

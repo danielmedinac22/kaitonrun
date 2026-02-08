@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    return [
+      { source: "/history", destination: "/historial", permanent: true },
+      { source: "/insights", destination: "/historial", permanent: true },
+      { source: "/settings", destination: "/ajustes", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

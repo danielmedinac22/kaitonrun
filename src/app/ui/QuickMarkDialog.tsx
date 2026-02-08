@@ -99,8 +99,8 @@ export default function QuickMarkDialog({
                   className={
                     "flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-all " +
                     (type === opt.key
-                      ? "border-indigo-300 bg-indigo-50 text-indigo-700 shadow-sm"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50")
+                      ? "border-primary/40 bg-primary-soft text-primary shadow-sm"
+                      : "border-border bg-surface text-txt-secondary hover:border-border hover:bg-surface-elevated")
                   }
                 >
                   {opt.icon}
@@ -143,12 +143,12 @@ export default function QuickMarkDialog({
 
           <div className="flex items-center justify-between">
             {status === "success" ? (
-              <div className="animate-fade-in flex items-center gap-1.5 text-sm font-medium text-emerald-600">
+              <div className="animate-fade-in flex items-center gap-1.5 text-sm font-medium text-success">
                 <Check className="h-4 w-4" />
                 Guardado
               </div>
             ) : status === "error" ? (
-              <div className="animate-fade-in text-sm font-medium text-red-600">{errorMsg}</div>
+              <div className="animate-fade-in text-sm font-medium text-danger">{errorMsg}</div>
             ) : (
               <div />
             )}
