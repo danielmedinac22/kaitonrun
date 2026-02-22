@@ -1,8 +1,7 @@
 {
-  "access_token": "86862a8b9803376aae3ff7271b20390ae9976849",
+  "access_token": "9c0e01f1360c93441eaade64d07b3af7b7c0c1f2",
   "refresh_token": "737164b3ae515bbd300f0f581bd048b895ba6244",
-  "expires_at": 1770575367,
+  "expires_at": 1771792403,
   "athlete_id": 137992291,
-  "athlete_name": "Daniel Medina",
-  "last_sync_at": 1770554024
+  "athlete_name": "Daniel Medina"
 }
